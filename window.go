@@ -2,6 +2,7 @@ package flinch
 
 import (
 	"sync"
+	"time"
 
 	"github.com/liamg/flinch/components"
 
@@ -14,7 +15,7 @@ type Window interface {
 	Size() (int, int)
 	Add(c core.Component)
 	Remove(c core.Component)
-	SetJustification(j core.Justification)
+	WithJustification(j core.Justification) Window
 	Show() error
 	Close()
 }
@@ -24,7 +25,6 @@ type window struct {
 	mu               sync.Mutex
 	screen           tcell.Screen
 	focusedComponent core.Component
-	canvas           core.Canvas
 }
 
 func New() (Window, error) {
@@ -41,8 +41,9 @@ func (w *window) SetContainer(c core.Container) {
 	w.container = c
 }
 
-func (w *window) SetJustification(j core.Justification) {
-	w.container.SetJustification(j)
+func (w *window) WithJustification(j core.Justification) Window {
+	w.container.WithJustification(j)
+	return w
 }
 
 func (w *window) Size() (int, int) {
@@ -87,8 +88,6 @@ func (w *window) init() error {
 		return err
 	}
 	w.screen = screen
-	w.canvas = NewBaseCanvas(w.screen)
-	w.screen.Clear()
 	return nil
 }
 
@@ -96,12 +95,17 @@ func (w *window) Show() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	w.container.Render(w.canvas)
-	//w.screen.SetCell(5, 5, tcell.StyleDefault, '!')
-	w.screen.Show()
+	for {
 
-	// TODO add for loop here until exit
-	<-(make(chan bool))
+		w.screen.Clear()
+		canvas := NewBaseCanvas(w.screen)
+
+		w.container.Render(canvas)
+		//w.screen.SetCell(5, 5, tcell.StyleDefault, '!')
+		w.screen.Show()
+		time.Sleep(time.Second)
+	}
+
 
 	return nil
 }

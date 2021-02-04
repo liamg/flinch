@@ -13,8 +13,9 @@ func NewText(content string) *text {
 	}
 }
 
-func (t *text) SetJustification(j core.Justification) {
+func (t *text) WithJustification(j core.Justification) *text {
 	t.justification = j
+	return t
 }
 
 func (t *text) Render(canvas core.Canvas) {

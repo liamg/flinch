@@ -13,14 +13,11 @@ func main() {
 		panic(err)
 	}
 
-	textA := components.NewText("A")
-	textA.SetJustification(core.JustifyCenter)
-	textB := components.NewText("B")
-	textB.SetJustification(core.JustifyCenter)
-	textC := components.NewText("C")
-	textC.SetJustification(core.JustifyCenter)
+	textA := components.NewText("AAAAA").WithJustification(core.JustifyCenter)
+	textB := components.NewText("BBBBB").WithJustification(core.JustifyCenter)
+	textC := components.NewText("CCCCC").WithJustification(core.JustifyCenter)
 
-	window.SetJustification(core.JustifyFill)
+	window.WithJustification(core.JustifyFill)
 	window.Add(textA)
 	window.Add(textB)
 	window.Add(textC)

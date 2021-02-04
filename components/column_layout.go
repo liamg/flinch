@@ -27,8 +27,9 @@ func (l *columnLayout) Remove(component core.Component) {
 	}
 }
 
-func (l *columnLayout) SetJustification(justification core.Justification) {
+func (l *columnLayout) WithJustification(justification core.Justification) core.Container {
 	l.justification = justification
+	return l
 }
 
 func (l *columnLayout) Render(canvas core.Canvas) {
@@ -56,11 +57,12 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 		spacing = 0
 	case core.JustifyFill:
 		startX = 0
-		spacing = (availableWidth - requiredWidth) / (len(l.components) - 1)
+		spacing = (availableWidth - requiredWidth) / len(l.components)
 	}
 
 	for _, component := range l.components {
 		cWidth, cHeight := component.Size()
+		cWidth = cWidth + spacing
 		if cHeight > availableHeight {
 			cHeight = availableHeight
 		}
@@ -70,7 +72,7 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 		cutout := canvas.Cutout(startX, 0, cWidth, cHeight)
 		component.Render(cutout)
 		availableWidth -= cWidth
-		startX += spacing
+		startX += cWidth
 	}
 }
 
@@ -81,7 +83,7 @@ func (l *columnLayout) Size() (int, int) {
 		w, h := component.Size()
 		requiredWidth += w
 		if h > requiredHeight {
-			requiredWidth = h
+			requiredHeight = h
 		}
 	}
 	return requiredWidth, requiredHeight
