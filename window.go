@@ -2,7 +2,6 @@ package flinch
 
 import (
 	"sync"
-	"time"
 
 	"github.com/liamg/flinch/components"
 
@@ -103,11 +102,18 @@ func (w *window) Show() error {
 		w.container.Render(canvas)
 		//w.screen.SetCell(5, 5, tcell.StyleDefault, '!')
 		w.screen.Show()
-		time.Sleep(time.Second)
+
+		switch ev := w.screen.PollEvent().(type) {
+		case *tcell.EventResize:
+			w.screen.Sync()
+		case *tcell.EventKey:
+			if ev.Key() == tcell.KeyEscape { // TODO remove this - just here to exit during testing
+				w.Close()
+				return nil
+			}
+		}
+
 	}
-
-
-	return nil
 }
 
 func (w *window) Close() {
