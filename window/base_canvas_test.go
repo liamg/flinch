@@ -10,10 +10,10 @@ import (
 func TestBaseCanvasSet(t *testing.T) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if err := screen.Init(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	defer screen.Fini()
 
@@ -29,10 +29,10 @@ func TestBaseCanvasSet(t *testing.T) {
 func TestBaseCanvasSize(t *testing.T) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if err := screen.Init(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	defer screen.Fini()
 
@@ -48,10 +48,10 @@ func TestBaseCanvasSize(t *testing.T) {
 func TestBaseCanvasCutout(t *testing.T) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if err := screen.Init(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	defer screen.Fini()
 
