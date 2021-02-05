@@ -33,10 +33,14 @@ type testCanvas struct {
 	cells map[int]map[int]rune
 	w     int
 	h     int
+	x     int
+	y     int
 }
 
-func newTestCanvas(w, h int) *testCanvas {
+func newTestCanvas(x, y, w, h int) *testCanvas {
 	return &testCanvas{
+		x: x,
+		y: y,
 		w: w,
 		h: h,
 	}
@@ -69,5 +73,5 @@ func (t *testCanvas) Size() (w int, h int) {
 }
 
 func (t *testCanvas) Cutout(x, y, w, h int) core.Canvas {
-	return nil
+	return newTestCanvas(x, y, w, h)
 }

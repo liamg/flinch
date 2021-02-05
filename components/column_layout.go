@@ -61,15 +61,12 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 	}
 
 	for _, component := range l.components {
-		cWidth, cHeight := component.Size()
+		cWidth, _ := component.Size()
 		cWidth = cWidth + spacing
-		if cHeight > availableHeight {
-			cHeight = availableHeight
-		}
 		if cWidth > availableWidth {
 			cWidth = availableWidth
 		}
-		cutout := canvas.Cutout(startX, 0, cWidth, cHeight)
+		cutout := canvas.Cutout(startX, 0, cWidth, availableHeight)
 		component.Render(cutout)
 		availableWidth -= cWidth
 		startX += cWidth

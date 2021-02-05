@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestColumnSizing(t *testing.T) {
+func TestColumnLayout(t *testing.T) {
 
 	canvasWidth, canvasHeight := 100, 50
 
@@ -27,7 +27,21 @@ func TestColumnSizing(t *testing.T) {
 			},
 			expectedSizes: [][2]int{
 				{
-					2, 2,
+					2, 50,
+				},
+			},
+		},
+		{
+			name:    "1 component, oversized, left justify",
+			justify: core.JustifyLeft,
+			componentSizes: [][2]int{
+				{
+					200, 2,
+				},
+			},
+			expectedSizes: [][2]int{
+				{
+					100, 50,
 				},
 			},
 		},
@@ -41,7 +55,7 @@ func TestColumnSizing(t *testing.T) {
 			},
 			expectedSizes: [][2]int{
 				{
-					2, 2,
+					2, 50,
 				},
 			},
 		},
@@ -55,7 +69,7 @@ func TestColumnSizing(t *testing.T) {
 			},
 			expectedSizes: [][2]int{
 				{
-					2, 2,
+					2, 50,
 				},
 			},
 		},
@@ -69,7 +83,7 @@ func TestColumnSizing(t *testing.T) {
 			},
 			expectedSizes: [][2]int{
 				{
-					100, 2,
+					100, 50,
 				},
 			},
 		},
@@ -81,8 +95,8 @@ func TestColumnSizing(t *testing.T) {
 				{4, 4},
 			},
 			expectedSizes: [][2]int{
-				{2, 2},
-				{4, 4},
+				{2, 50},
+				{4, 50},
 			},
 		},
 		{
@@ -93,8 +107,8 @@ func TestColumnSizing(t *testing.T) {
 				{4, 4},
 			},
 			expectedSizes: [][2]int{
-				{2, 2},
-				{4, 4},
+				{2, 50},
+				{4, 50},
 			},
 		},
 		{
@@ -105,8 +119,8 @@ func TestColumnSizing(t *testing.T) {
 				{4, 4},
 			},
 			expectedSizes: [][2]int{
-				{2, 2},
-				{4, 4},
+				{2, 50},
+				{4, 50},
 			},
 		},
 		{
@@ -117,20 +131,20 @@ func TestColumnSizing(t *testing.T) {
 				{4, 4},
 			},
 			expectedSizes: [][2]int{
-				{50, 2},
-				{50, 4},
+				{49, 50},
+				{51, 50},
 			},
 		},
 		{
 			name:    "2 components, fill justify, one bigger than half room",
 			justify: core.JustifyFill,
 			componentSizes: [][2]int{
-				{60, 2},
-				{4, 4},
+				{60, 50},
+				{4, 50},
 			},
 			expectedSizes: [][2]int{
-				{60, 2},
-				{40, 4},
+				{78, 50},
+				{22, 50},
 			},
 		},
 	}
@@ -139,9 +153,10 @@ func TestColumnSizing(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			layout := NewColumnLayout()
-			canvas := newTestCanvas(canvasWidth, canvasHeight)
+			layout.WithJustification(test.justify)
+			canvas := newTestCanvas(0, 0, canvasWidth, canvasHeight)
 
-			var components []core.Component
+			var components []*testComponent
 
 			var expectedWidth, expectedHeight int
 
@@ -163,6 +178,59 @@ func TestColumnSizing(t *testing.T) {
 			assert.Equal(t, expectedWidth, w)
 			assert.Equal(t, expectedHeight, h)
 
+			layout.Render(canvas)
+
+			var usedWidth int
+			for i, component := range components {
+				cW, cH := component.canvas.Size()
+				tc := component.canvas.(*testCanvas)
+				cX := tc.x
+				cY := tc.y
+				assert.Equal(t, test.expectedSizes[i][0], cW)
+				assert.Equal(t, test.expectedSizes[i][1], cH)
+				switch test.justify {
+				case core.JustifyLeft, core.JustifyFill:
+					assert.Equal(t, usedWidth, cX)
+				case core.JustifyRight:
+					var afterWidth int
+					for j := i; j < len(components); j++ {
+						aW, _ := components[j].canvas.Size()
+						afterWidth += aW
+					}
+					assert.Equal(t, canvasWidth-afterWidth, cX)
+				case core.JustifyCenter:
+					var allWidth int
+					for j := 0; j < len(components); j++ {
+						aW, _ := components[j].canvas.Size()
+						allWidth += aW
+					}
+					startX := (canvasWidth - allWidth) / 2
+					assert.Equal(t, usedWidth+startX, cX)
+				}
+				assert.Equal(t, 0, cY)
+				usedWidth += cW
+			}
+
 		})
 	}
+}
+
+func TestColumnLayoutDuplicateColumns(t *testing.T) {
+	layout := NewColumnLayout()
+	canvas := newTestCanvas(0, 0, 100, 50)
+	component := newTestComponent(10, 10, canvas)
+	layout.Add(component)
+	layout.Add(component)
+	w, _ := layout.Size()
+	assert.Equal(t, 10, w)
+}
+
+func TestColumnLayoutRemoveColumn(t *testing.T) {
+	layout := NewColumnLayout()
+	canvas := newTestCanvas(0, 0, 100, 50)
+	component := newTestComponent(10, 10, canvas)
+	layout.Add(component)
+	layout.Remove(component)
+	w, _ := layout.Size()
+	assert.Equal(t, 0, w)
 }

@@ -103,7 +103,7 @@ func TestRendering(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			text := NewText(test.input).WithJustification(test.justify)
-			canvas := newTestCanvas(test.canvasWidth, test.canvasHeight)
+			canvas := newTestCanvas(0, 0, test.canvasWidth, test.canvasHeight)
 			text.Render(canvas)
 
 			if test.canvasWidth == 0 || test.canvasHeight == 0 {
