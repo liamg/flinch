@@ -1,4 +1,4 @@
-package flinch
+package window
 
 import (
 	"testing"

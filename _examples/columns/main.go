@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/liamg/flinch"
 	"github.com/liamg/flinch/components"
 	"github.com/liamg/flinch/core"
+	window2 "github.com/liamg/flinch/window"
 )
 
 func main() {
 
-	window, err := flinch.New()
+	window, err := window2.New()
 	if err != nil {
 		panic(err)
 	}
