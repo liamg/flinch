@@ -1,19 +1,19 @@
 package core
 
-type Colour [3]uint8
+type Colour [3]int32
 
-func NewColour(r, g, b uint8) Colour {
-	return Colour([3]uint8{r, g, b})
+func NewColour(r, g, b int32) Colour {
+	return Colour([3]int32{r, g, b})
 }
 
-func (c Colour) Red() uint8 {
+func (c Colour) Red() int32 {
 	return c[0]
 }
 
-func (c Colour) Green() uint8 {
+func (c Colour) Green() int32 {
 	return c[1]
 }
 
-func (c Colour) Blue() uint8 {
+func (c Colour) Blue() int32 {
 	return c[2]
 }

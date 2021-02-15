@@ -7,9 +7,9 @@ import (
 
 type rowLayout struct {
 	components    []core.Component
-	selector *core.Selector
+	justification core.Justification
+	selector      *core.Selector
 }
-
 
 func NewRowLayout() *rowLayout {
 	return &rowLayout{
@@ -35,17 +35,48 @@ func (l *rowLayout) Remove(component core.Component) {
 	}
 }
 
-func (l *rowLayout) WithJustification(_ core.Justification) core.Container {
+func (l *rowLayout) WithJustification(justification core.Justification) core.Container {
+	l.justification = justification
 	return l
 }
 
 func (l *rowLayout) Render(canvas core.Canvas) {
 
+	_, requiredHeight := l.Size(canvas)
+
+	availableWidth, availableHeight := canvas.Size()
+
+	if requiredHeight > availableWidth {
+		requiredHeight = availableHeight
+	}
+
 	var startY int
+	var spacing int
+
+	switch l.justification {
+	case core.JustifyLeft:
+		startY = 0
+		spacing = 0
+	case core.JustifyRight:
+		startY = availableHeight - requiredHeight
+		spacing = 0
+	case core.JustifyCenter:
+		startY = (availableHeight - requiredHeight) / 2
+		spacing = 0
+	case core.JustifyFill:
+		startY = 0
+		spacing = (availableHeight - requiredHeight) / len(l.components)
+	}
+
 	for _, component := range l.components {
-		cWidth, cHeight := component.Size(canvas)
-		cutout := canvas.Cutout(0, startY, cWidth, cHeight)
+		_, cHeight := component.Size(canvas)
+		cHeight = cHeight + spacing
+		if cHeight > availableHeight {
+			cHeight = availableHeight
+		}
+		cutout := canvas.Cutout(0, startY, availableWidth, cHeight)
 		component.Render(cutout)
+		availableHeight -= cHeight
 		startY += cHeight
 	}
 }
@@ -63,12 +94,11 @@ func (l *rowLayout) Size(c core.Canvas) (int, int) {
 	return requiredWidth, requiredHeight
 }
 
-
-func(l *rowLayout) ToggleSelect() bool {
-	return l.selector.ToggleSelect(l.components)
+func (l *rowLayout) ToggleSelect(loop bool) bool {
+	return l.selector.ToggleSelect(l.components, loop)
 }
 
-func(l *rowLayout) HandleKeypress(key *tcell.EventKey) {
+func (l *rowLayout) HandleKeypress(key *tcell.EventKey) {
 	sel := l.selector.GetSelected()
 	if sel != nil {
 		sel.HandleKeypress(key)

@@ -20,10 +20,10 @@ type Window interface {
 }
 
 type window struct {
-	container         core.Container
-	mu                sync.Mutex
-	screen            tcell.Screen
-	keyHandlers       []func(key *tcell.EventKey) bool
+	container   core.Container
+	mu          sync.Mutex
+	screen      tcell.Screen
+	keyHandlers []func(key *tcell.EventKey) bool
 }
 
 func New() (Window, error) {
@@ -87,7 +87,9 @@ func (w *window) OnKeypress(handler func(key *tcell.EventKey) bool) {
 
 func (w *window) selectNext() {
 	if sel, ok := w.container.(core.Selectable); ok {
-		sel.ToggleSelect()
+		if !sel.ToggleSelect(false) {
+			sel.ToggleSelect(true)
+		}
 	}
 }
 
@@ -96,16 +98,17 @@ func (w *window) Show() error {
 	defer w.mu.Unlock()
 
 	if sel, ok := w.container.(core.Selectable); ok {
-		sel.ToggleSelect()
+		sel.ToggleSelect(false)
 	}
 
 	for {
 
+		w.screen.SetStyle(core.StyleDefault.Tcell())
 		w.screen.Clear()
 		canvas := NewBaseCanvas(w.screen)
+		canvas.Fill(' ', core.StyleDefault)
 
 		w.container.Render(canvas)
-		//w.screen.SetCell(5, 5, tcell.StyleDefault, '!')
 		w.screen.Show()
 
 		switch ev := w.screen.PollEvent().(type) {

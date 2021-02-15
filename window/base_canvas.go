@@ -16,8 +16,7 @@ func NewBaseCanvas(screen tcell.Screen) *baseCanvas {
 }
 
 func (c *baseCanvas) Set(x, y int, r rune, s core.Style) {
-	// TODO convert style
-	c.screen.SetCell(x, y, tcell.StyleDefault, r)
+	c.screen.SetCell(x, y, s.Tcell(), r)
 }
 
 func (c *baseCanvas) Size() (w int, h int) {
@@ -26,4 +25,13 @@ func (c *baseCanvas) Size() (w int, h int) {
 
 func (c *baseCanvas) Cutout(x, y, w, h int) core.Canvas {
 	return NewCutoutCanvas(c, x, y, w, h)
+}
+
+func (c *baseCanvas) Fill(r rune, s core.Style) {
+	w, h := c.Size()
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			c.Set(x, y, r, s)
+		}
+	}
 }

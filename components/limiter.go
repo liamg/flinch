@@ -57,7 +57,7 @@ func (t *limiter) Render(canvas core.Canvas) {
 
 func (t *limiter) Size(parent core.Canvas) (int, int) {
 
-	pw, ph := parent.Size()
+	pw, ph := t.inner.Size(parent)
 
 	if t.fixedLimitW > 0 {
 		if pw > t.fixedLimitW {
@@ -85,14 +85,14 @@ func (t *limiter) Size(parent core.Canvas) (int, int) {
 	return pw, ph
 }
 
-func(l *limiter) ToggleSelect() bool {
+func (l *limiter) ToggleSelect(loop bool) bool {
 	if sel, ok := l.inner.(core.Selectable); ok {
-		return sel.ToggleSelect()
+		return sel.ToggleSelect(loop)
 	}
 	return false
 }
 
-func(l *limiter) HandleKeypress(key *tcell.EventKey) {
+func (l *limiter) HandleKeypress(key *tcell.EventKey) {
 	if sel, ok := l.inner.(core.Selectable); ok {
 		sel.HandleKeypress(key)
 	}

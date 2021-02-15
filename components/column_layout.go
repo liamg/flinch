@@ -6,10 +6,10 @@ import (
 )
 
 type columnLayout struct {
-	components    []core.Component
-	justification core.Justification
+	components        []core.Component
+	justification     core.Justification
 	selectedComponent core.Selectable
-	selector *core.Selector
+	selector          *core.Selector
 }
 
 func NewColumnLayout() *columnLayout {
@@ -95,11 +95,11 @@ func (l *columnLayout) Size(parent core.Canvas) (int, int) {
 	return requiredWidth, requiredHeight
 }
 
-func(l *columnLayout) ToggleSelect() bool {
-	return l.selector.ToggleSelect(l.components)
+func (l *columnLayout) ToggleSelect(loop bool) bool {
+	return l.selector.ToggleSelect(l.components, loop)
 }
 
-func(l *columnLayout) HandleKeypress(key *tcell.EventKey) {
+func (l *columnLayout) HandleKeypress(key *tcell.EventKey) {
 	sel := l.selector.GetSelected()
 	if sel != nil {
 		sel.HandleKeypress(key)

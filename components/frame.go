@@ -18,20 +18,20 @@ func NewFrame(inner core.Component) *frame {
 func (t *frame) Render(canvas core.Canvas) {
 	w, h := canvas.Size()
 
-	for x := 0 ; x < w; x++ {
-		canvas.Set(x, 0, t.getRune(x,0,w,h), nil)
-		canvas.Set(x, h-1, t.getRune(x,h-1,w,h), nil)
+	for x := 0; x < w; x++ {
+		canvas.Set(x, 0, getBorderRune(x, 0, w, h), core.StyleDefault)
+		canvas.Set(x, h-1, getBorderRune(x, h-1, w, h), core.StyleDefault)
 	}
-	for y := 0 ; y < h; y++ {
-		canvas.Set(0, y, t.getRune(0,y,w,h), nil)
-		canvas.Set(w-1, y, t.getRune(w-1,y,w,h), nil)
+	for y := 0; y < h; y++ {
+		canvas.Set(0, y, getBorderRune(0, y, w, h), core.StyleDefault)
+		canvas.Set(w-1, y, getBorderRune(w-1, y, w, h), core.StyleDefault)
 	}
 
 	innerCanvas := canvas.Cutout(1, 1, w-2, h-2)
 	t.inner.Render(innerCanvas)
 }
 
-func(t *frame) getRune(x, y, w, h int) rune {
+func getBorderRune(x, y, w, h int) rune {
 	var r rune
 	switch true {
 	case x == 0 && y == 0:
@@ -57,14 +57,14 @@ func (t *frame) Size(parent core.Canvas) (int, int) {
 	return w + 2, h + 2
 }
 
-func(l *frame) ToggleSelect() bool {
+func (l *frame) ToggleSelect(loop bool) bool {
 	if sel, ok := l.inner.(core.Selectable); ok {
-		return sel.ToggleSelect()
+		return sel.ToggleSelect(loop)
 	}
 	return false
 }
 
-func(l *frame) HandleKeypress(key *tcell.EventKey) {
+func (l *frame) HandleKeypress(key *tcell.EventKey) {
 	if sel, ok := l.inner.(core.Selectable); ok {
 		sel.HandleKeypress(key)
 	}

@@ -6,20 +6,20 @@ import (
 )
 
 type checkbox struct {
-	label *text
-	checked bool
+	label    string
+	checked  bool
 	selected bool
 }
 
 func NewCheckbox(label string, checked bool) *checkbox {
 	return &checkbox{
-	    label: NewText(label),
-	    checked: checked,
+		label:   label,
+		checked: checked,
 	}
 }
 
 func (t *checkbox) Text() string {
-	return t.label.Text()
+	return t.label
 }
 
 func (t *checkbox) SetChecked(checked bool) {
@@ -27,29 +27,45 @@ func (t *checkbox) SetChecked(checked bool) {
 }
 
 func (t *checkbox) Render(canvas core.Canvas) {
-	w,h := canvas.Size()
-	labelCanvas := canvas.Cutout(4, 0, w-4, h)
-	t.label.Render(labelCanvas)
 
-	canvas.Set(0,0, '[', nil)
-	canvas.Set(2,0, ']', nil)
+	st := core.StyleDefault
+	if t.selected {
+		st = core.StyleSelected
+	}
+
+	canvas.Set(0, 0, '[', st)
+	canvas.Set(2, 0, ']', st)
 
 	if t.checked {
-		canvas.Set(1, 0, 'X', nil)
+		canvas.Set(1, 0, '✔', st)
+	} else {
+		canvas.Set(1, 0, '_', st)
+	}
+
+	for i := 0; i < len(t.label); i++ {
+		canvas.Set(4+i, 0, rune(t.label[i]), st)
 	}
 }
 
 func (t *checkbox) Size(parent core.Canvas) (int, int) {
-	w, h := t.label.Size(parent)
-	return w+4, h
+	w, _ := parent.Size()
+	return w, 1
 }
 
-func(l *checkbox) ToggleSelect() bool {
+func (l *checkbox) Select() {
+	l.selected = true
+}
+
+func (l *checkbox) Deselect() {
+	l.selected = false
+}
+
+func (l *checkbox) ToggleSelect(loop bool) bool {
 	l.selected = !l.selected
 	return l.selected
 }
 
-func(l *checkbox) HandleKeypress(key *tcell.EventKey) {
+func (l *checkbox) HandleKeypress(key *tcell.EventKey) {
 	switch key.Key() {
 	case tcell.KeyRune:
 		switch key.Rune() {

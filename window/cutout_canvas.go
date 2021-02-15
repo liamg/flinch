@@ -43,3 +43,12 @@ func (c *cutoutCanvas) Size() (w int, h int) {
 func (c *cutoutCanvas) Cutout(x, y, w, h int) core.Canvas {
 	return NewCutoutCanvas(c, x, y, w, h)
 }
+
+func (c *cutoutCanvas) Fill(r rune, s core.Style) {
+	w, h := c.Size()
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			c.Set(x, y, r, s)
+		}
+	}
+}

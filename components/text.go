@@ -47,7 +47,7 @@ func (t *text) Render(canvas core.Canvas) {
 	}
 
 	for offset, r := range content {
-		canvas.Set(x+offset, 0, r, nil)
+		canvas.Set(x+offset, 0, r, core.StyleDefault)
 	}
 }
 

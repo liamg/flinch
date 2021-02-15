@@ -7,4 +7,6 @@ const (
 	JustifyRight
 	JustifyCenter
 	JustifyFill
+	JustifyTop    = JustifyLeft
+	JustifyBottom = JustifyRight
 )
