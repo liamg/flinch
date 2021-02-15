@@ -20,10 +20,10 @@ type Window interface {
 }
 
 type window struct {
-	container        core.Container
-	mu               sync.Mutex
-	screen           tcell.Screen
-	focusedComponent core.Component
+	container         core.Container
+	mu                sync.Mutex
+	screen            tcell.Screen
+	keyHandlers       []func(key *tcell.EventKey) bool
 }
 
 func New() (Window, error) {
@@ -57,9 +57,6 @@ func (w *window) Size() (int, int) {
 func (w *window) Add(component core.Component) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if w.focusedComponent == nil {
-		w.focusedComponent = component
-	}
 	w.container.Add(component)
 }
 
@@ -67,12 +64,6 @@ func (w *window) Remove(component core.Component) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.container.Remove(component)
-}
-
-func (w *window) Focus(c core.Component) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	w.focusedComponent = c
 }
 
 func (w *window) init() error {
@@ -90,9 +81,23 @@ func (w *window) init() error {
 	return nil
 }
 
+func (w *window) OnKeypress(handler func(key *tcell.EventKey) bool) {
+	w.keyHandlers = append(w.keyHandlers, handler)
+}
+
+func (w *window) selectNext() {
+	if sel, ok := w.container.(core.Selectable); ok {
+		sel.ToggleSelect()
+	}
+}
+
 func (w *window) Show() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+
+	if sel, ok := w.container.(core.Selectable); ok {
+		sel.ToggleSelect()
+	}
 
 	for {
 
@@ -107,9 +112,25 @@ func (w *window) Show() error {
 		case *tcell.EventResize:
 			w.screen.Sync()
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape { // TODO remove this - just here to exit during testing
+			switch ev.Key() {
+			case tcell.KeyTab:
+				w.selectNext()
+			case tcell.KeyEscape:
 				w.Close()
 				return nil
+			default:
+				var handled bool
+				for _, handler := range w.keyHandlers {
+					if handler(ev) {
+						handled = true
+						break
+					}
+				}
+				if !handled {
+					if sel, ok := w.container.(core.Selectable); ok {
+						sel.HandleKeypress(ev)
+					}
+				}
 			}
 		}
 

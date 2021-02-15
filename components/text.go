@@ -22,6 +22,10 @@ func (t *text) WithJustification(j core.Justification) *text {
 	return t
 }
 
+func (t *text) Text() string {
+	return t.content
+}
+
 func (t *text) cleanContent() string {
 	return strings.Split(t.content, "\n")[0]
 }
@@ -47,6 +51,6 @@ func (t *text) Render(canvas core.Canvas) {
 	}
 }
 
-func (t *text) Size() (int, int) {
+func (t *text) Size(_ core.Canvas) (int, int) {
 	return len(t.cleanContent()), 1
 }

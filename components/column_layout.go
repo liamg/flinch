@@ -1,12 +1,21 @@
 package components
 
 import (
+	"github.com/gdamore/tcell/v2"
 	"github.com/liamg/flinch/core"
 )
 
 type columnLayout struct {
 	components    []core.Component
 	justification core.Justification
+	selectedComponent core.Selectable
+	selector *core.Selector
+}
+
+func NewColumnLayout() *columnLayout {
+	return &columnLayout{
+		selector: core.NewSelector(),
+	}
 }
 
 func (l *columnLayout) Add(component core.Component) {
@@ -34,7 +43,7 @@ func (l *columnLayout) WithJustification(justification core.Justification) core.
 
 func (l *columnLayout) Render(canvas core.Canvas) {
 
-	requiredWidth, _ := l.Size()
+	requiredWidth, _ := l.Size(canvas)
 
 	availableWidth, availableHeight := canvas.Size()
 
@@ -61,7 +70,7 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 	}
 
 	for _, component := range l.components {
-		cWidth, _ := component.Size()
+		cWidth, _ := component.Size(canvas)
 		cWidth = cWidth + spacing
 		if cWidth > availableWidth {
 			cWidth = availableWidth
@@ -73,11 +82,11 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 	}
 }
 
-func (l *columnLayout) Size() (int, int) {
+func (l *columnLayout) Size(parent core.Canvas) (int, int) {
 	var requiredWidth int
 	var requiredHeight int
 	for _, component := range l.components {
-		w, h := component.Size()
+		w, h := component.Size(parent)
 		requiredWidth += w
 		if h > requiredHeight {
 			requiredHeight = h
@@ -86,6 +95,13 @@ func (l *columnLayout) Size() (int, int) {
 	return requiredWidth, requiredHeight
 }
 
-func NewColumnLayout() *columnLayout {
-	return &columnLayout{}
+func(l *columnLayout) ToggleSelect() bool {
+	return l.selector.ToggleSelect(l.components)
+}
+
+func(l *columnLayout) HandleKeypress(key *tcell.EventKey) {
+	sel := l.selector.GetSelected()
+	if sel != nil {
+		sel.HandleKeypress(key)
+	}
 }
