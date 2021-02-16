@@ -95,8 +95,12 @@ func (l *columnLayout) Size(parent core.Canvas) (int, int) {
 	return requiredWidth, requiredHeight
 }
 
-func (l *columnLayout) ToggleSelect(loop bool) bool {
-	return l.selector.ToggleSelect(l.components, loop)
+func (l *columnLayout) Deselect() {
+	l.selector.Deselect()
+}
+
+func (l *columnLayout) Select(loop bool) bool {
+	return l.selector.Select(l.components, loop)
 }
 
 func (l *columnLayout) HandleKeypress(key *tcell.EventKey) {

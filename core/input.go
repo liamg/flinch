@@ -4,6 +4,7 @@ import "github.com/gdamore/tcell/v2"
 
 type Selectable interface {
 	Component
-	ToggleSelect(loop bool) bool
+	Select(loop bool) bool
+	Deselect()
 	HandleKeypress(key *tcell.EventKey)
 }

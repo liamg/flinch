@@ -87,8 +87,8 @@ func (w *window) OnKeypress(handler func(key *tcell.EventKey) bool) {
 
 func (w *window) selectNext() {
 	if sel, ok := w.container.(core.Selectable); ok {
-		if !sel.ToggleSelect(false) {
-			sel.ToggleSelect(true)
+		if !sel.Select(false) {
+			sel.Select(true)
 		}
 	}
 }
@@ -98,7 +98,7 @@ func (w *window) Show() error {
 	defer w.mu.Unlock()
 
 	if sel, ok := w.container.(core.Selectable); ok {
-		sel.ToggleSelect(false)
+		sel.Select(false)
 	}
 
 	for {

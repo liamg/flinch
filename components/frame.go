@@ -57,9 +57,15 @@ func (t *frame) Size(parent core.Canvas) (int, int) {
 	return w + 2, h + 2
 }
 
-func (l *frame) ToggleSelect(loop bool) bool {
-	if sel, ok := l.inner.(core.Selectable); ok {
-		return sel.ToggleSelect(loop)
+func (t *frame) Deselect() {
+	if sel, ok := t.inner.(core.Selectable); ok {
+		sel.Deselect()
+	}
+}
+
+func (t *frame) Select(loop bool) bool {
+	if sel, ok := t.inner.(core.Selectable); ok {
+		return sel.Select(loop)
 	}
 	return false
 }

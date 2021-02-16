@@ -94,8 +94,12 @@ func (l *rowLayout) Size(c core.Canvas) (int, int) {
 	return requiredWidth, requiredHeight
 }
 
-func (l *rowLayout) ToggleSelect(loop bool) bool {
-	return l.selector.ToggleSelect(l.components, loop)
+func (l *rowLayout) Deselect() {
+	l.selector.Deselect()
+}
+
+func (l *rowLayout) Select(loop bool) bool {
+	return l.selector.Select(l.components, loop)
 }
 
 func (l *rowLayout) HandleKeypress(key *tcell.EventKey) {

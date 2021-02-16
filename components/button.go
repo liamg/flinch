@@ -44,9 +44,16 @@ func (t *button) Size(parent core.Canvas) (int, int) {
 	return len(t.label) + 6, 3
 }
 
-func (l *button) ToggleSelect(loop bool) bool {
-	l.selected = !l.selected
-	return l.selected
+func (l *button) Deselect() {
+	l.selected = false
+}
+
+func (l *button) Select(loop bool) bool {
+	if l.selected {
+		return false
+	}
+	l.selected = true
+	return true
 }
 
 func (l *button) OnPress(f func()) {

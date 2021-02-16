@@ -32,7 +32,7 @@ func (t *listMultiSelect) WithOption(text string) *listMultiSelect {
 	cb := NewCheckbox(text, false)
 	t.options = append(t.options, cb)
 	if len(t.options) == 1 {
-		cb.ToggleSelect(false)
+		cb.Select(false)
 	}
 	return t
 }
@@ -67,9 +67,16 @@ func (t *listMultiSelect) Size(parent core.Canvas) (int, int) {
 	return w, len(t.options) + 2
 }
 
-func (l *listMultiSelect) ToggleSelect(loop bool) bool {
-	l.selected = !l.selected
-	return l.selected
+func (l *listMultiSelect) Deselect() {
+	l.selected = false
+}
+
+func (l *listMultiSelect) Select(loop bool) bool {
+	if l.selected {
+		return false
+	}
+	l.selected = true
+	return true
 }
 
 func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
@@ -81,7 +88,7 @@ func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
 		} else {
 			l.selectionIndex--
 		}
-		l.options[l.selectionIndex].Select()
+		l.options[l.selectionIndex].Select(false)
 	case tcell.KeyDown:
 		l.options[l.selectionIndex].Deselect()
 		if l.selectionIndex >= len(l.options)-1 {
@@ -89,7 +96,7 @@ func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
 		} else {
 			l.selectionIndex++
 		}
-		l.options[l.selectionIndex].Select()
+		l.options[l.selectionIndex].Select(false)
 	case tcell.KeyEnter:
 		l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
 	case tcell.KeyRune:

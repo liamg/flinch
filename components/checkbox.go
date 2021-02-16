@@ -52,17 +52,16 @@ func (t *checkbox) Size(parent core.Canvas) (int, int) {
 	return w, 1
 }
 
-func (l *checkbox) Select() {
-	l.selected = true
-}
-
 func (l *checkbox) Deselect() {
 	l.selected = false
 }
 
-func (l *checkbox) ToggleSelect(loop bool) bool {
-	l.selected = !l.selected
-	return l.selected
+func (l *checkbox) Select(loop bool) bool {
+	if l.selected {
+		return false
+	}
+	l.selected = true
+	return true
 }
 
 func (l *checkbox) HandleKeypress(key *tcell.EventKey) {

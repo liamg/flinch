@@ -85,9 +85,15 @@ func (t *limiter) Size(parent core.Canvas) (int, int) {
 	return pw, ph
 }
 
-func (l *limiter) ToggleSelect(loop bool) bool {
-	if sel, ok := l.inner.(core.Selectable); ok {
-		return sel.ToggleSelect(loop)
+func (t *limiter) Deselect() {
+	if sel, ok := t.inner.(core.Selectable); ok {
+		sel.Deselect()
+	}
+}
+
+func (t *limiter) Select(loop bool) bool {
+	if sel, ok := t.inner.(core.Selectable); ok {
+		return sel.Select(loop)
 	}
 	return false
 }
