@@ -8,26 +8,24 @@ type cutoutCanvas struct {
 	parent core.Canvas
 	x      int
 	y      int
-	w      int
-	h      int
+	size core.Size
 }
 
-func NewCutoutCanvas(parent core.Canvas, x, y, w, h int) *cutoutCanvas {
+func NewCutoutCanvas(parent core.Canvas, x, y int, size core.Size) *cutoutCanvas {
 	return &cutoutCanvas{
 		parent: parent,
 		x:      x,
 		y:      y,
-		w:      w,
-		h:      h,
+		size: size,
 	}
 }
 
 func (c *cutoutCanvas) Set(x, y int, r rune, s core.Style) {
 
-	if x >= c.w {
+	if x >= c.size.W {
 		return
 	}
-	if y >= c.h {
+	if y >= c.size.H {
 		return
 	}
 	tX := c.x + x
@@ -36,18 +34,17 @@ func (c *cutoutCanvas) Set(x, y int, r rune, s core.Style) {
 	c.parent.Set(tX, tY, r, s)
 }
 
-func (c *cutoutCanvas) Size() (w int, h int) {
-	return c.w, c.h
+func (c *cutoutCanvas) Size() core.Size {
+	return c.size
 }
 
-func (c *cutoutCanvas) Cutout(x, y, w, h int) core.Canvas {
-	return NewCutoutCanvas(c, x, y, w, h)
+func (c *cutoutCanvas) Cutout(x, y int, size core.Size) core.Canvas {
+	return NewCutoutCanvas(c, x, y, size)
 }
 
 func (c *cutoutCanvas) Fill(r rune, s core.Style) {
-	w, h := c.Size()
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
+	for x := 0; x < c.size.W; x++ {
+		for y := 0; y < c.size.H; y++ {
 			c.Set(x, y, r, s)
 		}
 	}

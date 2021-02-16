@@ -3,47 +3,46 @@ package components
 import "github.com/liamg/flinch/core"
 
 type testComponent struct {
-	w      int
-	h      int
+	size   core.Size
 	canvas core.Canvas
 }
 
-func newTestComponent(w, h int, canvas core.Canvas) *testComponent {
-	return &testComponent{
-		w:      w,
-		h:      h,
-		canvas: canvas,
-	}
+func (t *testComponent) MinimumSize() core.Size {
+	return t.size
 }
 
-func (t *testComponent) SetSize(w, h int) {
-	t.w = w
-	t.h = h
+func newTestComponent(size core.Size, canvas core.Canvas) *testComponent {
+	return &testComponent{
+		size:   size,
+		canvas: canvas,
+	}
 }
 
 func (t *testComponent) Render(canvas core.Canvas) {
 	t.canvas = canvas
 }
 
-func (t *testComponent) Size() (int, int) {
-	return t.w, t.h
+func (t *testComponent) Size() core.Size {
+	return t.size
 }
 
 type testCanvas struct {
 	cells map[int]map[int]rune
-	w     int
-	h     int
 	x     int
 	y     int
+	size  core.Size
 }
 
-func newTestCanvas(x, y, w, h int) *testCanvas {
+func newTestCanvas(x, y int, size core.Size) *testCanvas {
 	return &testCanvas{
-		x: x,
-		y: y,
-		w: w,
-		h: h,
+		x:    x,
+		y:    y,
+		size: size,
 	}
+}
+
+func (t *testCanvas) Fill(r rune, st core.Style) {
+
 }
 
 func (t *testCanvas) Set(x, y int, r rune, s core.Style) {
@@ -68,10 +67,10 @@ func (t *testCanvas) Get(x, y int) rune {
 	return cell
 }
 
-func (t *testCanvas) Size() (w int, h int) {
-	return t.w, t.h
+func (t *testCanvas) Size() core.Size {
+	return t.size
 }
 
-func (t *testCanvas) Cutout(x, y, w, h int) core.Canvas {
-	return newTestCanvas(x, y, w, h)
+func (t *testCanvas) Cutout(x, y int, size core.Size) core.Canvas {
+	return newTestCanvas(x, y, size)
 }

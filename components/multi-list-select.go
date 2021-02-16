@@ -5,42 +5,44 @@ import (
 	"github.com/liamg/flinch/core"
 )
 
-type listSelect struct {
+type listMultiSelect struct {
 	core.Sizer
 	options        []*checkbox
 	selectionIndex int
 	selected       bool
 }
 
-func NewListSelect(options []string) *listSelect {
-	list := &listSelect{}
+func NewMultiListSelect(options []string) *listMultiSelect {
+	list := &listMultiSelect{}
 	return list.WithOptions(options...)
 }
 
-// -1 means nothing is selected
-func (t *listSelect) GetSelection() (int, string) {
+func (t *listMultiSelect) GetSelection() ([]int, []string) {
+	var indexes []int
+	var strings []string
 	for i, cb := range t.options {
 		if cb.checked {
-			return i, cb.Text()
+			indexes = append(indexes, i)
+			strings = append(strings, cb.Text())
 		}
 	}
-	return -1, ""
+	return indexes, strings
 }
 
-func (t *listSelect) WithOption(text string) *listSelect {
+func (t *listMultiSelect) WithOption(text string) *listMultiSelect {
 	cb := NewCheckbox(text, false)
 	t.options = append(t.options, cb)
 	return t
 }
 
-func (t *listSelect) WithOptions(options ...string) *listSelect {
+func (t *listMultiSelect) WithOptions(options ...string) *listMultiSelect {
 	for _, opt := range options {
 		t.WithOption(opt)
 	}
 	return t
 }
 
-func (t *listSelect) Render(canvas core.Canvas) {
+func (t *listMultiSelect) Render(canvas core.Canvas) {
 	var y int
 	for _, opt := range t.options {
 		actualSize := core.CalculateSize(opt, canvas.Size())
@@ -50,7 +52,7 @@ func (t *listSelect) Render(canvas core.Canvas) {
 	}
 }
 
-func (t *listSelect) MinimumSize() core.Size {
+func (t *listMultiSelect) MinimumSize() core.Size {
 	var required core.Size
 	for _, opt := range t.options {
 		optSize := opt.MinimumSize()
@@ -62,14 +64,14 @@ func (t *listSelect) MinimumSize() core.Size {
 	return required
 }
 
-func (l *listSelect) Deselect() {
+func (l *listMultiSelect) Deselect() {
 	l.selected = false
 	if l.selectionIndex < len(l.options) {
 		l.options[l.selectionIndex].Deselect()
 	}
 }
 
-func (l *listSelect) Select() bool {
+func (l *listMultiSelect) Select() bool {
 	if l.selected {
 		return false
 	}
@@ -80,7 +82,7 @@ func (l *listSelect) Select() bool {
 	return true
 }
 
-func (l *listSelect) HandleKeypress(key *tcell.EventKey) {
+func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
 	switch key.Key() {
 	case tcell.KeyUp:
 		l.options[l.selectionIndex].Deselect()
@@ -99,11 +101,6 @@ func (l *listSelect) HandleKeypress(key *tcell.EventKey) {
 		}
 		l.options[l.selectionIndex].Select()
 	case tcell.KeyEnter:
-		if !l.options[l.selectionIndex].checked {
-			if l.selectionIndex < len(l.options) {
-				l.options[l.selectionIndex].Deselect()
-			}
-		}
 		l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
 	case tcell.KeyRune:
 		switch key.Rune() {

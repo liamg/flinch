@@ -6,15 +6,18 @@ import (
 )
 
 type rowLayout struct {
+	core.Sizer
 	components    []core.Component
-	justification core.Justification
+	justification core.Alignment
 	selector      *core.Selector
 }
 
 func NewRowLayout() *rowLayout {
-	return &rowLayout{
+	layout := &rowLayout{
 		selector: core.NewSelector(),
 	}
+	layout.SetSizeStrategy(core.SizeStrategyMaximum())
+	return layout
 }
 
 func (l *rowLayout) Add(component core.Component) {
@@ -35,71 +38,58 @@ func (l *rowLayout) Remove(component core.Component) {
 	}
 }
 
-func (l *rowLayout) WithJustification(justification core.Justification) core.Container {
+func (l *rowLayout) SetAlignment(justification core.Alignment) {
 	l.justification = justification
-	return l
 }
 
 func (l *rowLayout) Render(canvas core.Canvas) {
 
-	_, requiredHeight := l.Size(canvas)
+	availableSize := canvas.Size()
+	requiredSize := l.MinimumSize()
+	extraSpace := availableSize.Minus(requiredSize)
 
-	availableWidth, availableHeight := canvas.Size()
-
-	if requiredHeight > availableWidth {
-		requiredHeight = availableHeight
-	}
-
-	var startY int
-	var spacing int
-
-	switch l.justification {
-	case core.JustifyLeft:
-		startY = 0
-		spacing = 0
-	case core.JustifyRight:
-		startY = availableHeight - requiredHeight
-		spacing = 0
-	case core.JustifyCenter:
-		startY = (availableHeight - requiredHeight) / 2
-		spacing = 0
-	case core.JustifyFill:
-		startY = 0
-		spacing = (availableHeight - requiredHeight) / len(l.components)
-	}
+	var usedHeight int
 
 	for _, component := range l.components {
-		_, cHeight := component.Size(canvas)
-		cHeight = cHeight + spacing
-		if cHeight > availableHeight {
-			cHeight = availableHeight
+		spacing := (extraSpace.H * requiredSize.H) / availableSize.H
+		min := component.MinimumSize()
+		compAvail := core.Size{W: availableSize.W, H: min.H + spacing}
+		compSize := core.CalculateSize(component, compAvail)
+
+		var cutout core.Canvas
+		switch l.justification {
+		case core.AlignTop:
+			cutout = canvas.Cutout(0, usedHeight, compSize)
+		case core.AlignBottom:
+			cutout = canvas.Cutout(0, (availableSize.H-requiredSize.H)-usedHeight, compSize)
+		case core.AlignCenter:
+			x := (availableSize.W - compSize.W) / 2
+			cutout = canvas.Cutout(x, usedHeight+((availableSize.H-requiredSize.H)/2), compSize)
 		}
-		cutout := canvas.Cutout(0, startY, availableWidth, cHeight)
+
+		usedHeight += compSize.H
 		component.Render(cutout)
-		availableHeight -= cHeight
-		startY += cHeight
 	}
 }
 
-func (l *rowLayout) Size(c core.Canvas) (int, int) {
-	var requiredWidth int
-	var requiredHeight int
-	for _, component := range l.components {
-		w, h := component.Size(c)
-		requiredHeight += h
-		if w > requiredWidth {
-			requiredWidth = w
+func (t *rowLayout) MinimumSize() core.Size {
+	var required core.Size
+	for _, comp := range t.components {
+		min := comp.MinimumSize()
+		required.H += min.H
+		if min.W > required.W {
+			required.W = min.W
 		}
 	}
-	return requiredWidth, requiredHeight
+	return required
 }
 
 func (l *rowLayout) Deselect() {
 	l.selector.Deselect()
 }
 
-func (l *rowLayout) Select(loop bool) bool {
-	return l.selector.Select(l.components, loop)
+func (l *rowLayout) Select() bool {
+	return l.selector.Select(l.components)
 }
 
 func (l *rowLayout) HandleKeypress(key *tcell.EventKey) {

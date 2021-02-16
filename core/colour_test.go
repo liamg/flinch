@@ -9,7 +9,7 @@ import (
 
 func TestColourFunctions(t *testing.T) {
 
-	inputs := [][3]uint8{
+	inputs := [][3]int32{
 		{0, 0, 0},
 		{1, 2, 3},
 		{255, 0, 0},

@@ -7,23 +7,30 @@ import (
 )
 
 type text struct {
-	content       string
-	justification core.Justification
+	core.Sizer
+	content   string
+	alignment core.Alignment
+	style     core.Style
 }
 
 func NewText(content string) *text {
 	return &text{
 		content: content,
+		style:   core.StyleDefault,
 	}
 }
 
-func (t *text) WithJustification(j core.Justification) *text {
-	t.justification = j
+func (t *text) SetAlignment(j core.Alignment) *text {
+	t.alignment = j
 	return t
 }
 
 func (t *text) Text() string {
 	return t.content
+}
+
+func (t *text) SetStyle(s core.Style) {
+	t.style = s
 }
 
 func (t *text) cleanContent() string {
@@ -33,24 +40,27 @@ func (t *text) cleanContent() string {
 func (t *text) Render(canvas core.Canvas) {
 
 	var x int
-	w, _ := canvas.Size()
+	size := canvas.Size()
 
 	content := t.cleanContent()
 
-	switch t.justification {
-	case core.JustifyLeft:
+	switch t.alignment {
+	case core.AlignLeft:
 		x = 0
-	case core.JustifyRight:
-		x = w - len(content)
-	case core.JustifyCenter, core.JustifyFill:
-		x = (w - len(content)) / 2
+	case core.AlignRight:
+		x = size.W - len(content)
+	case core.AlignCenter:
+		x = (size.W - len(content)) / 2
 	}
 
 	for offset, r := range content {
-		canvas.Set(x+offset, 0, r, core.StyleDefault)
+		canvas.Set(x+offset, 0, r, t.style)
 	}
 }
 
-func (t *text) Size(_ core.Canvas) (int, int) {
-	return len(t.cleanContent()), 1
+func (t *text) MinimumSize() core.Size {
+	return core.Size{
+		W: len(t.cleanContent()),
+		H: 1,
+	}
 }

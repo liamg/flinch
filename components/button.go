@@ -6,6 +6,7 @@ import (
 )
 
 type button struct {
+	core.Sizer
 	label     string
 	selected  bool
 	pressFunc func()
@@ -23,32 +24,31 @@ func (t *button) Text() string {
 
 func (t *button) Render(canvas core.Canvas) {
 
-	st := core.StyleDefault
+	st := core.StyleButton
 	if t.selected {
-		st = core.StyleSelected
+		st = core.StyleButtonSelected
 	}
 
-	w, _ := canvas.Size()
+	canvas.Fill(' ', st)
+	size := canvas.Size()
 
-	if t.selected {
-		canvas.Set(1, 0, '>', st)
-		canvas.Set(w-2, 0, '<', st)
-	}
+	canvas.Set(0, 0, '', st.Invert())
+	canvas.Set(size.W-1, 0, '', st.Invert())
 
 	for i := 0; i < len(t.label); i++ {
-		canvas.Set(((w-len(t.label))/2)+i, 0, rune(t.label[i]), st)
+		canvas.Set(((size.W-len(t.label))/2)+i, 0, rune(t.label[i]), st)
 	}
 }
 
-func (t *button) Size(parent core.Canvas) (int, int) {
-	return len(t.label) + 6, 3
+func (t *button) MinimumSize() core.Size {
+	return core.Size{W: len(t.label) + 4, H: 1}
 }
 
 func (l *button) Deselect() {
 	l.selected = false
 }
 
-func (l *button) Select(loop bool) bool {
+func (l *button) Select() bool {
 	if l.selected {
 		return false
 	}

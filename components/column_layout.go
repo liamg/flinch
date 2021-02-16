@@ -6,16 +6,19 @@ import (
 )
 
 type columnLayout struct {
+	core.Sizer
 	components        []core.Component
-	justification     core.Justification
+	justification     core.Alignment
 	selectedComponent core.Selectable
 	selector          *core.Selector
 }
 
 func NewColumnLayout() *columnLayout {
-	return &columnLayout{
+	layout := &columnLayout{
 		selector: core.NewSelector(),
 	}
+	layout.SetSizeStrategy(core.SizeStrategyMaximum())
+	return layout
 }
 
 func (l *columnLayout) Add(component core.Component) {
@@ -36,71 +39,71 @@ func (l *columnLayout) Remove(component core.Component) {
 	}
 }
 
-func (l *columnLayout) WithJustification(justification core.Justification) core.Container {
+func (l *columnLayout) SetAlignment(justification core.Alignment) {
 	l.justification = justification
-	return l
 }
 
 func (l *columnLayout) Render(canvas core.Canvas) {
 
-	requiredWidth, _ := l.Size(canvas)
+	availableSize := canvas.Size()
+	requiredSize := l.MinimumSize()
+	extraSpace := availableSize.Minus(requiredSize)
 
-	availableWidth, availableHeight := canvas.Size()
-
-	if requiredWidth > availableWidth {
-		requiredWidth = availableWidth
-	}
-
-	var startX int
-	var spacing int
-
-	switch l.justification {
-	case core.JustifyLeft:
-		startX = 0
-		spacing = 0
-	case core.JustifyRight:
-		startX = availableWidth - requiredWidth
-		spacing = 0
-	case core.JustifyCenter:
-		startX = (availableWidth - requiredWidth) / 2
-		spacing = 0
-	case core.JustifyFill:
-		startX = 0
-		spacing = (availableWidth - requiredWidth) / len(l.components)
-	}
-
-	for _, component := range l.components {
-		cWidth, _ := component.Size(canvas)
-		cWidth = cWidth + spacing
-		if cWidth > availableWidth {
-			cWidth = availableWidth
+	var usedWidth int
+	var actualWidth int
+	for i, component := range l.components {
+		spacing := (extraSpace.W * requiredSize.W) / availableSize.W
+		min := component.MinimumSize()
+		if i == len(l.components)-1 {
+			spacing = (availableSize.W - usedWidth) - min.W
 		}
-		cutout := canvas.Cutout(startX, 0, cWidth, availableHeight)
+		compAvail := core.Size{W: min.W + spacing, H: availableSize.H}
+		compSize := core.CalculateSize(component, compAvail)
+		actualWidth += compSize.W
+	}
+
+	for i, component := range l.components {
+		spacing := (extraSpace.W * requiredSize.W) / availableSize.W
+		min := component.MinimumSize()
+		if i == len(l.components)-1 {
+			spacing = (availableSize.W - usedWidth) - min.W
+		}
+		compAvail := core.Size{W: min.W + spacing, H: availableSize.H}
+		compSize := core.CalculateSize(component, compAvail)
+
+		var cutout core.Canvas
+		switch l.justification {
+		case core.AlignLeft:
+			cutout = canvas.Cutout(usedWidth, 0, compSize)
+		case core.AlignRight:
+			cutout = canvas.Cutout((availableSize.W-actualWidth)-usedWidth, 0, compSize)
+		case core.AlignCenter:
+			cutout = canvas.Cutout(usedWidth+((availableSize.W-actualWidth)/2), 0, compSize)
+		}
+
+		usedWidth += compSize.W
 		component.Render(cutout)
-		availableWidth -= cWidth
-		startX += cWidth
 	}
 }
 
-func (l *columnLayout) Size(parent core.Canvas) (int, int) {
-	var requiredWidth int
-	var requiredHeight int
-	for _, component := range l.components {
-		w, h := component.Size(parent)
-		requiredWidth += w
-		if h > requiredHeight {
-			requiredHeight = h
+func (t *columnLayout) MinimumSize() core.Size {
+	var required core.Size
+	for _, comp := range t.components {
+		min := comp.MinimumSize()
+		required.W += min.W
+		if min.H > required.H {
+			required.H = min.H
 		}
 	}
-	return requiredWidth, requiredHeight
+	return required
 }
 
 func (l *columnLayout) Deselect() {
 	l.selector.Deselect()
 }
 
-func (l *columnLayout) Select(loop bool) bool {
-	return l.selector.Select(l.components, loop)
+func (l *columnLayout) Select() bool {
+	return l.selector.Select(l.components)
 }
 
 func (l *columnLayout) HandleKeypress(key *tcell.EventKey) {

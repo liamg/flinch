@@ -20,10 +20,10 @@ func TestTextSizing(t *testing.T) {
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
 			text := NewText(input)
-			w, h := text.Size()
+			size := text.MinimumSize()
 			output := strings.Split(input, "\n")[0]
-			assert.Equal(t, len(output), w)
-			assert.Equal(t, 1, h)
+			assert.Equal(t, len(output), size.W)
+			assert.Equal(t, 1, size.H)
 		})
 	}
 }
@@ -36,7 +36,7 @@ func TestRendering(t *testing.T) {
 		output       string
 		canvasWidth  int
 		canvasHeight int
-		justify      core.Justification
+		justify      core.Alignment
 	}{
 		{
 			name:         "left align",
@@ -44,7 +44,7 @@ func TestRendering(t *testing.T) {
 			output:       "hello",
 			canvasWidth:  20,
 			canvasHeight: 10,
-			justify:      core.JustifyLeft,
+			justify:      core.AlignLeft,
 		},
 		{
 			name:         "right align",
@@ -52,7 +52,7 @@ func TestRendering(t *testing.T) {
 			output:       "hello",
 			canvasWidth:  20,
 			canvasHeight: 10,
-			justify:      core.JustifyRight,
+			justify:      core.AlignRight,
 		},
 		{
 			name:         "center align",
@@ -60,15 +60,7 @@ func TestRendering(t *testing.T) {
 			output:       "hello",
 			canvasWidth:  20,
 			canvasHeight: 10,
-			justify:      core.JustifyCenter,
-		},
-		{
-			name:         "fill align (center)",
-			input:        "hello",
-			output:       "hello",
-			canvasWidth:  20,
-			canvasHeight: 10,
-			justify:      core.JustifyFill,
+			justify:      core.AlignCenter,
 		},
 		{
 			name:         "zero height",
@@ -102,8 +94,8 @@ func TestRendering(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			text := NewText(test.input).WithJustification(test.justify)
-			canvas := newTestCanvas(0, 0, test.canvasWidth, test.canvasHeight)
+			text := NewText(test.input).SetAlignment(test.justify)
+			canvas := newTestCanvas(0, 0, core.Size{test.canvasWidth, test.canvasHeight})
 			text.Render(canvas)
 
 			if test.canvasWidth == 0 || test.canvasHeight == 0 {
@@ -116,7 +108,7 @@ func TestRendering(t *testing.T) {
 			}
 
 			switch test.justify {
-			case core.JustifyLeft:
+			case core.AlignLeft:
 				for x := 0; x < test.canvasWidth; x++ {
 					r := canvas.Get(x, 0)
 					if x < len([]rune(test.output)) {
@@ -125,7 +117,7 @@ func TestRendering(t *testing.T) {
 						assert.Equal(t, rune(0), r)
 					}
 				}
-			case core.JustifyRight:
+			case core.AlignRight:
 				offset := test.canvasWidth - len([]rune(test.output))
 				for x := 0; x < test.canvasWidth; x++ {
 					r := canvas.Get(x, 0)
@@ -135,7 +127,7 @@ func TestRendering(t *testing.T) {
 						assert.Equal(t, rune(0), r)
 					}
 				}
-			case core.JustifyCenter, core.JustifyFill:
+			case core.AlignCenter:
 				offset := (test.canvasWidth - len([]rune(test.output))) / 2
 				for x := 0; x < test.canvasWidth; x++ {
 					r := canvas.Get(x, 0)
@@ -146,7 +138,7 @@ func TestRendering(t *testing.T) {
 					}
 				}
 			default:
-				t.Errorf("invalid justification: 0x%x", test.justify)
+				t.Errorf("invalid alignment: 0x%x", test.justify)
 			}
 
 			for x := 0; x < test.canvasWidth; x++ {

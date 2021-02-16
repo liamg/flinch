@@ -12,9 +12,28 @@ var StyleDefault = Style{
 	fg: Colour([3]int32{0xff, 0xff, 0xff}),
 }
 
+var StyleFaint = Style{
+	bg: StyleDefault.GetBackground(),
+	fg: Colour([3]int32{0x80, 0x80, 0x80}),
+}
+
 var StyleSelected = Style{
-	bg: Colour([3]int32{0x0, 0x0, 0x88}),
-	fg: Colour([3]int32{0xff, 0xff, 0xff}),
+	bg: Colour([3]int32{0xff, 0xff, 0xff}),
+	fg: Colour([3]int32{0x00, 0x00, 0x88}),
+}
+
+var StyleButton = Style{
+	bg: Colour([3]int32{0x80, 0x80, 0x80}),
+	fg: StyleDefault.GetBackground(),
+}
+
+var StyleButtonSelected = StyleDefault.Invert()
+
+func (s *Style) Invert() Style {
+	return Style{
+		fg: s.GetBackground(),
+		bg: s.GetForeground(),
+	}
 }
 
 func (s *Style) GetForeground() Colour {

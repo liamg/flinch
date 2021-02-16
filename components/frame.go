@@ -16,18 +16,19 @@ func NewFrame(inner core.Component) *frame {
 }
 
 func (t *frame) Render(canvas core.Canvas) {
-	w, h := canvas.Size()
 
-	for x := 0; x < w; x++ {
-		canvas.Set(x, 0, getBorderRune(x, 0, w, h), core.StyleDefault)
-		canvas.Set(x, h-1, getBorderRune(x, h-1, w, h), core.StyleDefault)
+	size := canvas.Size()
+
+	for x := 0; x < size.W; x++ {
+		canvas.Set(x, 0, getBorderRune(x, 0, size.W, size.H), core.StyleDefault)
+		canvas.Set(x, size.H-1, getBorderRune(x, size.H-1, size.W, size.H), core.StyleDefault)
 	}
-	for y := 0; y < h; y++ {
-		canvas.Set(0, y, getBorderRune(0, y, w, h), core.StyleDefault)
-		canvas.Set(w-1, y, getBorderRune(w-1, y, w, h), core.StyleDefault)
+	for y := 0; y < size.H; y++ {
+		canvas.Set(0, y, getBorderRune(0, y, size.W, size.H), core.StyleDefault)
+		canvas.Set(size.W-1, y, getBorderRune(size.W-1, y, size.W, size.H), core.StyleDefault)
 	}
 
-	innerCanvas := canvas.Cutout(1, 1, w-2, h-2)
+	innerCanvas := canvas.Cutout(1, 1, size.Minus(core.Size{W: 2, H: 2}))
 	t.inner.Render(innerCanvas)
 }
 
@@ -52,9 +53,8 @@ func getBorderRune(x, y, w, h int) rune {
 	return r
 }
 
-func (t *frame) Size(parent core.Canvas) (int, int) {
-	w, h := t.inner.Size(parent)
-	return w + 2, h + 2
+func (t *frame) MinimumSize() core.Size {
+	return t.inner.MinimumSize().Add(core.Size{W: 2, H: 2})
 }
 
 func (t *frame) Deselect() {
@@ -63,9 +63,9 @@ func (t *frame) Deselect() {
 	}
 }
 
-func (t *frame) Select(loop bool) bool {
+func (t *frame) Select() bool {
 	if sel, ok := t.inner.(core.Selectable); ok {
-		return sel.Select(loop)
+		return sel.Select()
 	}
 	return false
 }
@@ -74,4 +74,17 @@ func (l *frame) HandleKeypress(key *tcell.EventKey) {
 	if sel, ok := l.inner.(core.Selectable); ok {
 		sel.HandleKeypress(key)
 	}
+}
+
+func (s *frame) SetSizeStrategy(strategy core.SizeStrategy) {
+	if sizer, ok := s.inner.(core.StrategicSizer); ok {
+		sizer.SetSizeStrategy(strategy)
+	}
+}
+
+func (s frame) GetSizeStrategy() core.SizeStrategy {
+	if sizer, ok := s.inner.(core.StrategicSizer); ok {
+		return sizer.GetSizeStrategy()
+	}
+	return core.SizeStrategyMaximum()
 }

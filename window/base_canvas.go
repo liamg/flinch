@@ -19,18 +19,22 @@ func (c *baseCanvas) Set(x, y int, r rune, s core.Style) {
 	c.screen.SetCell(x, y, s.Tcell(), r)
 }
 
-func (c *baseCanvas) Size() (w int, h int) {
-	return c.screen.Size()
+func (c *baseCanvas) Size() core.Size {
+	w, h := c.screen.Size()
+	return core.Size{
+		W: w,
+		H: h,
+	}
 }
 
-func (c *baseCanvas) Cutout(x, y, w, h int) core.Canvas {
-	return NewCutoutCanvas(c, x, y, w, h)
+func (c *baseCanvas) Cutout(x, y int, size core.Size) core.Canvas {
+	return NewCutoutCanvas(c, x, y, size)
 }
 
 func (c *baseCanvas) Fill(r rune, s core.Style) {
-	w, h := c.Size()
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
+	size := c.Size()
+	for x := 0; x < size.W; x++ {
+		for y := 0; y < size.H; y++ {
 			c.Set(x, y, r, s)
 		}
 	}

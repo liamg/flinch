@@ -14,7 +14,7 @@ type Window interface {
 	Size() (int, int)
 	Add(c core.Component)
 	Remove(c core.Component)
-	WithJustification(j core.Justification) Window
+	SetAlignment(j core.Alignment) Window
 	Show() error
 	Close()
 }
@@ -24,6 +24,7 @@ type window struct {
 	mu          sync.Mutex
 	screen      tcell.Screen
 	keyHandlers []func(key *tcell.EventKey) bool
+	shouldClose bool
 }
 
 func New() (Window, error) {
@@ -40,8 +41,8 @@ func (w *window) SetContainer(c core.Container) {
 	w.container = c
 }
 
-func (w *window) WithJustification(j core.Justification) Window {
-	w.container.WithJustification(j)
+func (w *window) SetAlignment(j core.Alignment) Window {
+	w.container.SetAlignment(j)
 	return w
 }
 
@@ -87,10 +88,20 @@ func (w *window) OnKeypress(handler func(key *tcell.EventKey) bool) {
 
 func (w *window) selectNext() {
 	if sel, ok := w.container.(core.Selectable); ok {
-		if !sel.Select(false) {
-			sel.Select(true)
+		if !sel.Select() {
+			sel.Deselect()
+			sel.Select()
 		}
 	}
+}
+
+func (w *window) render() {
+	canvas := NewBaseCanvas(w.screen)
+	canvas.Fill(' ', core.StyleDefault)
+	w.screen.SetStyle(core.StyleDefault.Tcell())
+	w.screen.Clear()
+	w.container.Render(canvas)
+	w.screen.Show()
 }
 
 func (w *window) Show() error {
@@ -98,29 +109,22 @@ func (w *window) Show() error {
 	defer w.mu.Unlock()
 
 	if sel, ok := w.container.(core.Selectable); ok {
-		sel.Select(false)
+		sel.Select()
 	}
 
 	for {
 
-		w.screen.SetStyle(core.StyleDefault.Tcell())
-		w.screen.Clear()
-		canvas := NewBaseCanvas(w.screen)
-		canvas.Fill(' ', core.StyleDefault)
-
-		w.container.Render(canvas)
-		w.screen.Show()
+		w.render()
 
 		switch ev := w.screen.PollEvent().(type) {
 		case *tcell.EventResize:
-			w.screen.Sync()
+			w.render()
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyTab:
 				w.selectNext()
 			case tcell.KeyEscape:
-				w.Close()
-				return nil
+				w.shouldClose = true
 			default:
 				var handled bool
 				for _, handler := range w.keyHandlers {
@@ -137,9 +141,14 @@ func (w *window) Show() error {
 			}
 		}
 
+		if w.shouldClose {
+			w.screen.Fini()
+			return nil
+		}
+
 	}
 }
 
 func (w *window) Close() {
-	w.screen.Fini()
+	w.shouldClose = true
 }
