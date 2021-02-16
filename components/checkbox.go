@@ -44,7 +44,7 @@ func (t *checkbox) Render(canvas core.Canvas) {
 	if t.checked {
 		canvas.Set(1, 0, '✔', st)
 	} else {
-		canvas.Set(1, 0, '_', st)
+		canvas.Set(1, 0, ' ', st)
 	}
 
 	for i := 0; i < len(t.label); i++ {

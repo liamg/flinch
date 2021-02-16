@@ -16,6 +16,7 @@ type Window interface {
 	Remove(c core.Component)
 	SetAlignment(j core.Alignment) Window
 	Show() error
+	OnKeypress(handler func(key *tcell.EventKey) bool)
 	Close()
 }
 

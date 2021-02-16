@@ -29,6 +29,11 @@ var StyleButton = Style{
 
 var StyleButtonSelected = StyleDefault.Invert()
 
+var StyleInput = Style{
+	bg: Colour([3]int32{0x0, 0x00, 0x00}),
+	fg: Colour([3]int32{0xff, 0xff, 0xff}),
+}
+
 func (s *Style) Invert() Style {
 	return Style{
 		fg: s.GetBackground(),

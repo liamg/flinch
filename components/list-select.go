@@ -18,8 +18,8 @@ func NewListSelect(options []string) *listSelect {
 }
 
 // -1 means nothing is selected
-func (t *listSelect) GetSelection() (int, string) {
-	for i, cb := range t.options {
+func (l *listSelect) GetSelection() (int, string) {
+	for i, cb := range l.options {
 		if cb.checked {
 			return i, cb.Text()
 		}
@@ -27,22 +27,22 @@ func (t *listSelect) GetSelection() (int, string) {
 	return -1, ""
 }
 
-func (t *listSelect) WithOption(text string) *listSelect {
+func (l *listSelect) WithOption(text string) *listSelect {
 	cb := NewCheckbox(text, false)
-	t.options = append(t.options, cb)
-	return t
+	l.options = append(l.options, cb)
+	return l
 }
 
-func (t *listSelect) WithOptions(options ...string) *listSelect {
+func (l *listSelect) WithOptions(options ...string) *listSelect {
 	for _, opt := range options {
-		t.WithOption(opt)
+		l.WithOption(opt)
 	}
-	return t
+	return l
 }
 
-func (t *listSelect) Render(canvas core.Canvas) {
+func (l *listSelect) Render(canvas core.Canvas) {
 	var y int
-	for _, opt := range t.options {
+	for _, opt := range l.options {
 		actualSize := core.CalculateSize(opt, canvas.Size())
 		cutout := canvas.Cutout(0, y, actualSize)
 		y += actualSize.H
@@ -50,9 +50,9 @@ func (t *listSelect) Render(canvas core.Canvas) {
 	}
 }
 
-func (t *listSelect) MinimumSize() core.Size {
+func (l *listSelect) MinimumSize() core.Size {
 	var required core.Size
-	for _, opt := range t.options {
+	for _, opt := range l.options {
 		optSize := opt.MinimumSize()
 		if optSize.W > required.W {
 			required.W = optSize.W
@@ -99,16 +99,20 @@ func (l *listSelect) HandleKeypress(key *tcell.EventKey) {
 		}
 		l.options[l.selectionIndex].Select()
 	case tcell.KeyEnter:
-		if !l.options[l.selectionIndex].checked {
-			if l.selectionIndex < len(l.options) {
-				l.options[l.selectionIndex].Deselect()
-			}
-		}
-		l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
+		l.toggleCurrent()
 	case tcell.KeyRune:
 		switch key.Rune() {
 		case ' ':
-			l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
+			l.toggleCurrent()
 		}
 	}
+}
+
+func (l *listSelect) toggleCurrent() {
+	if !l.options[l.selectionIndex].checked {
+		for _, opt := range l.options {
+			opt.checked = false
+		}
+	}
+	l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
 }

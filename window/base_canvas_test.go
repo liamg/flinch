@@ -3,6 +3,8 @@ package window
 import (
 	"testing"
 
+	"github.com/liamg/flinch/core"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +20,7 @@ func TestBaseCanvasSet(t *testing.T) {
 	defer screen.Fini()
 
 	canvas := NewBaseCanvas(screen)
-	canvas.Set(5, 5, 'x', nil)
+	canvas.Set(5, 5, 'x', core.StyleDefault)
 
 	r, _, _, _ := screen.GetContent(5, 5)
 
@@ -39,10 +41,10 @@ func TestBaseCanvasSize(t *testing.T) {
 	canvas := NewBaseCanvas(screen)
 
 	eW, eH := screen.Size()
-	aW, aH := canvas.Size()
+	cSize := canvas.Size()
 
-	assert.Equal(t, eW, aW)
-	assert.Equal(t, eH, aH)
+	assert.Equal(t, eW, cSize.W)
+	assert.Equal(t, eH, cSize.H)
 }
 
 func TestBaseCanvasCutout(t *testing.T) {
@@ -56,9 +58,9 @@ func TestBaseCanvasCutout(t *testing.T) {
 	defer screen.Fini()
 
 	canvas := NewBaseCanvas(screen)
-	child := canvas.Cutout(0, 0, 5, 10)
+	child := canvas.Cutout(0, 0, core.Size{W: 5, H: 10})
 
-	w, h := child.Size()
-	assert.Equal(t, 5, w)
-	assert.Equal(t, 10, h)
+	cSize := child.Size()
+	assert.Equal(t, 5, cSize.W)
+	assert.Equal(t, 10, cSize.H)
 }

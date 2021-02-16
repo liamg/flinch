@@ -52,7 +52,7 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 	var usedWidth int
 	var actualWidth int
 	for i, component := range l.components {
-		spacing := (extraSpace.W * requiredSize.W) / availableSize.W
+		spacing := (extraSpace.W) / len(l.components)
 		min := component.MinimumSize()
 		if i == len(l.components)-1 {
 			spacing = (availableSize.W - usedWidth) - min.W
@@ -63,7 +63,7 @@ func (l *columnLayout) Render(canvas core.Canvas) {
 	}
 
 	for i, component := range l.components {
-		spacing := (extraSpace.W * requiredSize.W) / availableSize.W
+		spacing := (extraSpace.W) / len(l.components)
 		min := component.MinimumSize()
 		if i == len(l.components)-1 {
 			spacing = (availableSize.W - usedWidth) - min.W

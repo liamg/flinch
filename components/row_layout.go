@@ -51,7 +51,7 @@ func (l *rowLayout) Render(canvas core.Canvas) {
 	var usedHeight int
 
 	for _, component := range l.components {
-		spacing := (extraSpace.H * requiredSize.H) / availableSize.H
+		spacing := (extraSpace.H) / len(l.components)
 		min := component.MinimumSize()
 		compAvail := core.Size{W: availableSize.W, H: min.H + spacing}
 		compSize := core.CalculateSize(component, compAvail)

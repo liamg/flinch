@@ -1,32 +1,36 @@
-package main
+package widgets
 
 import (
-	"fmt"
-	"strings"
-
+	"github.com/gdamore/tcell/v2"
 	"github.com/liamg/flinch/components"
 	"github.com/liamg/flinch/core"
 	"github.com/liamg/flinch/window"
 )
 
-func main() {
+func Input(msg string) (string, error) {
 
 	win, err := window.New()
 	if err != nil {
-		panic(err)
+		return "", err
+	}
+
+	minLength := 50
+	maxLength := minLength
+	if len(msg) > maxLength {
+		maxLength = len(msg)
 	}
 
 	minSize := core.SizeStrategyMultiple(
 		core.SizeStrategyPercentage(80, 0),
-		core.SizeStrategyAtLeast(core.Size{50, 1}),
-		core.SizeStrategyAtMost(core.Size{60, 100}),
+		core.SizeStrategyAtLeast(core.Size{W: minLength, H: 1}),
+		core.SizeStrategyAtMost(core.Size{W: maxLength + 8, H: 100}),
 	)
 
-	list := components.NewMultiListSelect([]string{"Development", "Test", "Production", "Management"})
-	list.SetSizeStrategy(minSize)
-	listFrame := components.NewFrame(list)
+	inputbox := components.NewInput()
+	inputbox.SetSizeStrategy(minSize)
+	listFrame := components.NewFrame(inputbox)
 
-	text := components.NewText("Select one or more environment(s):")
+	text := components.NewText(msg)
 	text.SetSizeStrategy(minSize)
 	textFrame := components.NewFrame(text)
 
@@ -39,10 +43,20 @@ func main() {
 
 	okButton := components.NewButton("OK")
 	okButton.OnPress(func() {
-		win.Close()
 		selected = true
+		win.Close()
 	})
 	buttons.Add(okButton)
+
+	inputbox.OnKeypress(func(key *tcell.EventKey) bool {
+		switch key.Key() {
+		case tcell.KeyEnter:
+			selected = true
+			win.Close()
+			return true
+		}
+		return false
+	})
 
 	buttons.Add(components.NewSpacer(core.Size{W: 1}))
 
@@ -52,7 +66,7 @@ func main() {
 	})
 	buttons.Add(cancelButton)
 
-	help := components.NewText("Use UP/DOWN, TAB, ENTER")
+	help := components.NewText("Use TAB, ENTER")
 	help.SetSizeStrategy(core.SizeStrategyMaximumWidth())
 	help.SetAlignment(core.AlignRight)
 	help.SetStyle(core.StyleFaint)
@@ -69,13 +83,14 @@ func main() {
 	win.Add(rows)
 
 	if err := win.Show(); err != nil {
-		panic(err)
+		return "", err
 	}
 
-	if selected {
-		_, items := list.GetSelection()
-		fmt.Printf("You selected %s.\n", strings.Join(items, ", "))
-	} else {
-		fmt.Println("User cancelled.")
+	if !selected {
+		return "", ErrInputCancelled
 	}
+
+	input := inputbox.GetInput()
+
+	return input, nil
 }

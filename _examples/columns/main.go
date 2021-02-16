@@ -14,10 +14,13 @@ func main() {
 	}
 
 	textA := components.NewText("AAAAA").SetAlignment(core.AlignCenter)
+	textA.SetSizeStrategy(core.SizeStrategyMaximumWidth())
 	textB := components.NewText("BBBBB").SetAlignment(core.AlignCenter)
+	textB.SetSizeStrategy(core.SizeStrategyMaximumWidth())
 	textC := components.NewText("CCCCC").SetAlignment(core.AlignCenter)
+	textC.SetSizeStrategy(core.SizeStrategyMaximumWidth())
 
-	window.SetAlignment(core.JustifyFill)
+	//window.SetAlignment(core.AlignCenter)
 	window.Add(textA)
 	window.Add(textB)
 	window.Add(textC)
