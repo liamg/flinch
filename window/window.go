@@ -125,7 +125,7 @@ func (w *window) Show() error {
 			case tcell.KeyTab:
 				w.selectNext()
 			case tcell.KeyEscape:
-				w.shouldClose = true
+				w.Close()
 			default:
 				var handled bool
 				for _, handler := range w.keyHandlers {
@@ -143,7 +143,6 @@ func (w *window) Show() error {
 		}
 
 		if w.shouldClose {
-			w.screen.Fini()
 			return nil
 		}
 
@@ -151,5 +150,6 @@ func (w *window) Show() error {
 }
 
 func (w *window) Close() {
+	w.screen.Fini()
 	w.shouldClose = true
 }
