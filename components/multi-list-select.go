@@ -10,6 +10,7 @@ type listMultiSelect struct {
 	options        []*checkbox
 	selectionIndex int
 	selected       bool
+	keyHandlers    []func(key *tcell.EventKey) bool
 }
 
 func NewMultiListSelect(options []string) *listMultiSelect {
@@ -82,7 +83,18 @@ func (l *listMultiSelect) Select() bool {
 	return true
 }
 
+func (n *listMultiSelect) OnKeypress(handler func(key *tcell.EventKey) bool) {
+	n.keyHandlers = append(n.keyHandlers, handler)
+}
+
 func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
+
+	for _, handler := range l.keyHandlers {
+		if handler(key) {
+			return
+		}
+	}
+
 	switch key.Key() {
 	case tcell.KeyUp:
 		l.options[l.selectionIndex].Deselect()

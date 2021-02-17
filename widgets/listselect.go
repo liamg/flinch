@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"github.com/gdamore/tcell/v2"
 	"github.com/liamg/flinch/components"
 	"github.com/liamg/flinch/core"
 	"github.com/liamg/flinch/window"
@@ -43,6 +44,16 @@ func ListSelect(msg string, options []string) (int, string, error) {
 
 	var selected bool
 
+	list.OnKeypress(func(key *tcell.EventKey) bool {
+		switch key.Key() {
+		case tcell.KeyEnter:
+			selected = true
+			win.Close()
+			return true
+		}
+		return false
+	})
+
 	buttons.Add(components.NewSpacer(core.Size{W: 1}))
 
 	okButton := components.NewButton("OK")
@@ -60,7 +71,7 @@ func ListSelect(msg string, options []string) (int, string, error) {
 	})
 	buttons.Add(cancelButton)
 
-	help := components.NewText("Use UP/DOWN, TAB, ENTER")
+	help := components.NewText("Use UP/DOWN, SPACE, TAB, ENTER")
 	help.SetSizeStrategy(core.SizeStrategyMaximumWidth())
 	help.SetAlignment(core.AlignRight)
 	help.SetStyle(core.StyleFaint)
