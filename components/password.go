@@ -106,9 +106,11 @@ func (n *passwordInput) HandleKeypress(key *tcell.EventKey) {
 			n.cursor--
 		}
 	case tcell.KeyDelete:
-		first := []rune(n.content)[:n.cursor]
-		second := []rune(n.content)[n.cursor+1:]
-		n.content = string(first) + string(second)
+		if n.cursor < len([]rune(n.content)) {
+			first := []rune(n.content)[:n.cursor]
+			second := []rune(n.content)[n.cursor+1:]
+			n.content = string(first) + string(second)
+		}
 	case tcell.KeyRune:
 		first := []rune(n.content)[:n.cursor]
 		second := []rune(n.content)[n.cursor:]
