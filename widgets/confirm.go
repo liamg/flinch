@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"github.com/gdamore/tcell/v2"
 	"github.com/liamg/flinch/components"
 	"github.com/liamg/flinch/core"
 	"github.com/liamg/flinch/window"
@@ -26,11 +27,12 @@ func Confirm(msg string) (bool, error) {
 	)
 
 	text := components.NewText(msg)
+	text.SetAlignment(core.AlignCenter)
 	text.SetSizeStrategy(minSize)
-	textFrame := components.NewFrame(text)
 
 	strip := components.NewColumnLayout()
 	strip.SetSizeStrategy(minSize)
+	strip.SetAlignment(core.AlignCenter)
 
 	yes := components.NewButton("Yes")
 	no := components.NewButton("No")
@@ -38,7 +40,7 @@ func Confirm(msg string) (bool, error) {
 	strip.Add(no)
 
 	rows := components.NewRowLayout()
-	rows.Add(textFrame)
+	rows.Add(text)
 	rows.Add(components.NewSpacer(core.Size{H: 1}))
 	rows.Add(strip)
 	rows.SetAlignment(core.AlignCenter)
@@ -55,6 +57,18 @@ func Confirm(msg string) (bool, error) {
 
 	no.OnPress(func() {
 		win.Close()
+	})
+
+	win.OnKeypress(func(key *tcell.EventKey) bool {
+		switch key.Rune() {
+		case 'y', 'Y':
+			confirmed = true
+			win.Close()
+		case 'n', 'N':
+			confirmed = false
+			win.Close()
+		}
+		return false
 	})
 
 	if err := win.Show(); err != nil {

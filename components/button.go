@@ -32,8 +32,10 @@ func (t *button) Render(canvas core.Canvas) {
 	canvas.Fill(' ', st)
 	size := canvas.Size()
 
-	canvas.Set(0, 0, '', st.Invert())
-	canvas.Set(size.W-1, 0, '', st.Invert())
+	if t.selected {
+		canvas.Set(0, 0, '', st.Invert())
+		canvas.Set(size.W-1, 0, '', st.Invert())
+	}
 
 	for i := 0; i < len(t.label); i++ {
 		canvas.Set(((size.W-len(t.label))/2)+i, 0, rune(t.label[i]), st)

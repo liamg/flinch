@@ -28,7 +28,7 @@ var StyleSelected = StyleDefault.Invert()
 
 var StyleFaint = StyleDefault.SetForeground([3]int32{0x80, 0x80, 0x80})
 
-var StyleButton = StyleFaint.Invert()
+var StyleButton = StyleFaint
 var StyleButtonSelected = StyleDefault.Invert().Bold(true)
 
 var StyleInput = StyleDefault

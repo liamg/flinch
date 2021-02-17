@@ -31,8 +31,8 @@ func Input(msg string) (string, error) {
 	listFrame := components.NewFrame(inputbox)
 
 	text := components.NewText(msg)
+	text.PadText(1)
 	text.SetSizeStrategy(minSize)
-	textFrame := components.NewFrame(text)
 
 	strip := components.NewColumnLayout()
 	strip.SetSizeStrategy(minSize)
@@ -51,12 +51,12 @@ func Input(msg string) (string, error) {
 
 	help := components.NewText("ENTER to confirm, ESC to cancel")
 	help.SetSizeStrategy(core.SizeStrategyMaximumWidth())
-	help.SetAlignment(core.AlignCenter)
+	help.SetAlignment(core.AlignRight)
 	help.SetStyle(core.StyleFaint)
 	strip.Add(help)
 
 	rows := components.NewRowLayout()
-	rows.Add(textFrame)
+	rows.Add(text)
 	rows.Add(listFrame)
 	rows.Add(components.NewSpacer(core.Size{H: 1}))
 	rows.Add(strip)

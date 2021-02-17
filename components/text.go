@@ -11,6 +11,7 @@ type text struct {
 	content   string
 	alignment core.Alignment
 	style     core.Style
+	padSize   int
 }
 
 func NewText(content string) *text {
@@ -18,6 +19,10 @@ func NewText(content string) *text {
 		content: content,
 		style:   core.StyleDefault,
 	}
+}
+
+func (t *text) PadText(size int) {
+	t.padSize = size
 }
 
 func (t *text) SetAlignment(j core.Alignment) *text {
@@ -54,7 +59,7 @@ func (t *text) Render(canvas core.Canvas) {
 	}
 
 	for offset, r := range content {
-		canvas.Set(x+offset, 0, r, t.style)
+		canvas.Set(x+offset+t.padSize, 0, r, t.style)
 	}
 }
 
