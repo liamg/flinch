@@ -7,8 +7,9 @@ import (
 
 type listSelect struct {
 	core.Sizer
-	options        []*checkbox
+	options        []string
 	selectionIndex int
+	viewIndex      int
 	selected       bool
 	keyHandlers    []func(key *tcell.EventKey) bool
 }
@@ -20,17 +21,14 @@ func NewListSelect(options []string) *listSelect {
 
 // -1 means nothing is selected
 func (l *listSelect) GetSelection() (int, string) {
-	for i, cb := range l.options {
-		if cb.checked {
-			return i, cb.Text()
-		}
+	if l.selectionIndex > len(l.options)-1 {
+		return -1, ""
 	}
-	return -1, ""
+	return l.selectionIndex, l.options[l.selectionIndex]
 }
 
 func (l *listSelect) WithOption(text string) *listSelect {
-	cb := NewCheckbox(text, false)
-	l.options = append(l.options, cb)
+	l.options = append(l.options, text)
 	return l
 }
 
@@ -43,31 +41,53 @@ func (l *listSelect) WithOptions(options ...string) *listSelect {
 
 func (l *listSelect) Render(canvas core.Canvas) {
 	var y int
-	for _, opt := range l.options {
-		actualSize := core.CalculateSize(opt, canvas.Size())
-		cutout := canvas.Cutout(0, y, actualSize)
-		y += actualSize.H
-		opt.Render(cutout)
+	size := canvas.Size()
+	visibleCount := size.H
+	size.H = 1
+
+	if l.selectionIndex < l.viewIndex {
+		l.viewIndex = l.selectionIndex
+	} else if l.selectionIndex >= l.viewIndex+visibleCount {
+		l.viewIndex = (l.selectionIndex - visibleCount) + 1
+	}
+
+	if len(l.options) > visibleCount {
+		size.W--
+		scrollCanvas := canvas.Cutout(size.W, 0, core.Size{W: 1, H: visibleCount})
+		drawScrollbar(scrollCanvas, l.viewIndex, visibleCount, len(l.options))
+	}
+
+	for index := l.viewIndex; index < l.viewIndex+visibleCount && index < len(l.options); index++ {
+		opt := l.options[index]
+		cutout := canvas.Cutout(0, y, size)
+		st := core.StyleDefault
+		if index == l.selectionIndex {
+			st = core.StyleSelected
+		}
+		y++
+		cutout.Fill(' ', st)
+		if index == l.selectionIndex {
+			cutout.Set(1, 0, '✔', st)
+		}
+		for i, char := range []rune(opt) {
+			cutout.Set(i+3, 0, char, st)
+		}
 	}
 }
 
 func (l *listSelect) MinimumSize() core.Size {
-	var required core.Size
-	for _, opt := range l.options {
-		optSize := opt.MinimumSize()
-		if optSize.W > required.W {
-			required.W = optSize.W
-		}
-		required.H += optSize.H
+	maxVisible := 10
+	if len(l.options) < maxVisible {
+		maxVisible = len(l.options)
 	}
-	return required
+	return core.Size{
+		W: 10,
+		H: maxVisible,
+	}
 }
 
 func (l *listSelect) Deselect() {
 	l.selected = false
-	if l.selectionIndex < len(l.options) {
-		l.options[l.selectionIndex].Deselect()
-	}
 }
 
 func (l *listSelect) Select() bool {
@@ -75,9 +95,6 @@ func (l *listSelect) Select() bool {
 		return false
 	}
 	l.selected = true
-	if l.selectionIndex < len(l.options) {
-		l.options[l.selectionIndex].Select()
-	}
 	return true
 }
 
@@ -95,36 +112,12 @@ func (l *listSelect) HandleKeypress(key *tcell.EventKey) {
 
 	switch key.Key() {
 	case tcell.KeyUp:
-		l.options[l.selectionIndex].Deselect()
-		if l.selectionIndex <= 0 {
-			l.selectionIndex = len(l.options) - 1
-		} else {
+		if l.selectionIndex > 0 {
 			l.selectionIndex--
 		}
-		l.options[l.selectionIndex].Select()
 	case tcell.KeyDown:
-		l.options[l.selectionIndex].Deselect()
-		if l.selectionIndex >= len(l.options)-1 {
-			l.selectionIndex = 0
-		} else {
+		if l.selectionIndex < len(l.options)-1 {
 			l.selectionIndex++
 		}
-		l.options[l.selectionIndex].Select()
-	case tcell.KeyEnter:
-		l.toggleCurrent()
-	case tcell.KeyRune:
-		switch key.Rune() {
-		case ' ':
-			l.toggleCurrent()
-		}
 	}
-}
-
-func (l *listSelect) toggleCurrent() {
-	if !l.options[l.selectionIndex].checked {
-		for _, opt := range l.options {
-			opt.checked = false
-		}
-	}
-	l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
 }

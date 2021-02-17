@@ -32,14 +32,16 @@ func (t *checkbox) SetChecked(checked bool) {
 func (t *checkbox) Render(canvas core.Canvas) {
 
 	st := core.StyleDefault
+	faint := core.StyleFaint
 	if t.selected {
 		st = core.StyleSelected
+		faint = st
 	}
 
 	canvas.Fill(' ', st)
 
-	canvas.Set(0, 0, '[', st)
-	canvas.Set(2, 0, ']', st)
+	canvas.Set(0, 0, '[', faint)
+	canvas.Set(2, 0, ']', faint)
 
 	if t.checked {
 		canvas.Set(1, 0, '✔', st)

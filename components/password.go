@@ -36,15 +36,24 @@ func (n *passwordInput) Render(canvas core.Canvas) {
 
 	canvas.Set(n.cursor, 0, ' ', n.style.Invert())
 
-	for offset, _ := range n.content {
+	size := canvas.Size()
+
+	visibleContent := n.content
+	clampedCursor := n.cursor
+
+	if n.cursor >= size.W {
+		visibleContent = string([]rune(n.content)[n.cursor-size.W:])
+		clampedCursor = size.W - 1
+	}
+
+	for offset := range []rune(visibleContent) {
 		st := n.style
-		if offset == n.cursor {
+		if offset == clampedCursor {
 			st = st.Invert()
 		}
 		canvas.Set(offset, 0, '*', st)
 	}
 }
-
 func (n *passwordInput) MinimumSize() core.Size {
 	return core.Size{
 		W: 1,

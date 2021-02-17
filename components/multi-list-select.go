@@ -11,6 +11,7 @@ type listMultiSelect struct {
 	selectionIndex int
 	selected       bool
 	keyHandlers    []func(key *tcell.EventKey) bool
+	viewIndex      int
 }
 
 func NewMultiListSelect(options []string) *listMultiSelect {
@@ -18,10 +19,10 @@ func NewMultiListSelect(options []string) *listMultiSelect {
 	return list.WithOptions(options...)
 }
 
-func (t *listMultiSelect) GetSelection() ([]int, []string) {
+func (m *listMultiSelect) GetSelection() ([]int, []string) {
 	var indexes []int
 	var strings []string
-	for i, cb := range t.options {
+	for i, cb := range m.options {
 		if cb.checked {
 			indexes = append(indexes, i)
 			strings = append(strings, cb.Text())
@@ -30,66 +31,82 @@ func (t *listMultiSelect) GetSelection() ([]int, []string) {
 	return indexes, strings
 }
 
-func (t *listMultiSelect) WithOption(text string) *listMultiSelect {
+func (m *listMultiSelect) WithOption(text string) *listMultiSelect {
 	cb := NewCheckbox(text, false)
-	t.options = append(t.options, cb)
-	return t
+	m.options = append(m.options, cb)
+	return m
 }
 
-func (t *listMultiSelect) WithOptions(options ...string) *listMultiSelect {
+func (m *listMultiSelect) WithOptions(options ...string) *listMultiSelect {
 	for _, opt := range options {
-		t.WithOption(opt)
+		m.WithOption(opt)
 	}
-	return t
+	return m
 }
 
-func (t *listMultiSelect) Render(canvas core.Canvas) {
+func (m *listMultiSelect) Render(canvas core.Canvas) {
 	var y int
-	for _, opt := range t.options {
-		actualSize := core.CalculateSize(opt, canvas.Size())
+	size := canvas.Size()
+	visibleCount := size.H
+	size.H = 1
+
+	if m.selectionIndex < m.viewIndex {
+		m.viewIndex = m.selectionIndex
+	} else if m.selectionIndex >= m.viewIndex+visibleCount {
+		m.viewIndex = (m.selectionIndex - visibleCount) + 1
+	}
+
+	if len(m.options) > visibleCount {
+		size.W--
+		scrollCanvas := canvas.Cutout(size.W, 0, core.Size{W: 1, H: visibleCount})
+		drawScrollbar(scrollCanvas, m.viewIndex, visibleCount, len(m.options))
+	}
+
+	for index := m.viewIndex; index < m.viewIndex+visibleCount && index < len(m.options); index++ {
+		opt := m.options[index]
+		actualSize := core.CalculateSize(opt, size)
 		cutout := canvas.Cutout(0, y, actualSize)
 		y += actualSize.H
 		opt.Render(cutout)
 	}
 }
 
-func (t *listMultiSelect) MinimumSize() core.Size {
-	var required core.Size
-	for _, opt := range t.options {
-		optSize := opt.MinimumSize()
-		if optSize.W > required.W {
-			required.W = optSize.W
-		}
-		required.H += optSize.H
+func (l *listMultiSelect) MinimumSize() core.Size {
+	maxVisible := 10
+	if len(l.options) < maxVisible {
+		maxVisible = len(l.options)
 	}
-	return required
-}
-
-func (l *listMultiSelect) Deselect() {
-	l.selected = false
-	if l.selectionIndex < len(l.options) {
-		l.options[l.selectionIndex].Deselect()
+	return core.Size{
+		W: 10,
+		H: maxVisible,
 	}
 }
 
-func (l *listMultiSelect) Select() bool {
-	if l.selected {
+func (m *listMultiSelect) Deselect() {
+	m.selected = false
+	if m.selectionIndex < len(m.options) {
+		m.options[m.selectionIndex].Deselect()
+	}
+}
+
+func (m *listMultiSelect) Select() bool {
+	if m.selected {
 		return false
 	}
-	l.selected = true
-	if l.selectionIndex < len(l.options) {
-		l.options[l.selectionIndex].Select()
+	m.selected = true
+	if m.selectionIndex < len(m.options) {
+		m.options[m.selectionIndex].Select()
 	}
 	return true
 }
 
-func (n *listMultiSelect) OnKeypress(handler func(key *tcell.EventKey) bool) {
-	n.keyHandlers = append(n.keyHandlers, handler)
+func (m *listMultiSelect) OnKeypress(handler func(key *tcell.EventKey) bool) {
+	m.keyHandlers = append(m.keyHandlers, handler)
 }
 
-func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
+func (m *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
 
-	for _, handler := range l.keyHandlers {
+	for _, handler := range m.keyHandlers {
 		if handler(key) {
 			return
 		}
@@ -97,27 +114,23 @@ func (l *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
 
 	switch key.Key() {
 	case tcell.KeyUp:
-		l.options[l.selectionIndex].Deselect()
-		if l.selectionIndex <= 0 {
-			l.selectionIndex = len(l.options) - 1
-		} else {
-			l.selectionIndex--
+		m.options[m.selectionIndex].Deselect()
+		if m.selectionIndex > 0 {
+			m.selectionIndex--
 		}
-		l.options[l.selectionIndex].Select()
+		m.options[m.selectionIndex].Select()
 	case tcell.KeyDown:
-		l.options[l.selectionIndex].Deselect()
-		if l.selectionIndex >= len(l.options)-1 {
-			l.selectionIndex = 0
-		} else {
-			l.selectionIndex++
+		m.options[m.selectionIndex].Deselect()
+		if m.selectionIndex < len(m.options)-1 {
+			m.selectionIndex++
 		}
-		l.options[l.selectionIndex].Select()
+		m.options[m.selectionIndex].Select()
 	case tcell.KeyEnter:
-		l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
+		m.options[m.selectionIndex].checked = !m.options[m.selectionIndex].checked
 	case tcell.KeyRune:
 		switch key.Rune() {
 		case ' ':
-			l.options[l.selectionIndex].checked = !l.options[l.selectionIndex].checked
+			m.options[m.selectionIndex].checked = !m.options[m.selectionIndex].checked
 		}
 	}
 }

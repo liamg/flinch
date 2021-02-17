@@ -34,19 +34,10 @@ func PasswordInput(msg string) (string, error) {
 	text.SetSizeStrategy(minSize)
 	textFrame := components.NewFrame(text)
 
-	buttons := components.NewColumnLayout()
-	buttons.SetSizeStrategy(minSize)
+	strip := components.NewColumnLayout()
+	strip.SetSizeStrategy(minSize)
 
 	var selected bool
-
-	buttons.Add(components.NewSpacer(core.Size{W: 1}))
-
-	okButton := components.NewButton("OK")
-	okButton.OnPress(func() {
-		selected = true
-		win.Close()
-	})
-	buttons.Add(okButton)
 
 	inputbox.OnKeypress(func(key *tcell.EventKey) bool {
 		switch key.Key() {
@@ -58,25 +49,17 @@ func PasswordInput(msg string) (string, error) {
 		return false
 	})
 
-	buttons.Add(components.NewSpacer(core.Size{W: 1}))
-
-	cancelButton := components.NewButton("Cancel")
-	cancelButton.OnPress(func() {
-		win.Close()
-	})
-	buttons.Add(cancelButton)
-
-	help := components.NewText("Use TAB, ENTER")
+	help := components.NewText("ENTER to confirm, ESC to cancel")
 	help.SetSizeStrategy(core.SizeStrategyMaximumWidth())
 	help.SetAlignment(core.AlignRight)
 	help.SetStyle(core.StyleFaint)
-	buttons.Add(help)
+	strip.Add(help)
 
 	rows := components.NewRowLayout()
 	rows.Add(textFrame)
 	rows.Add(listFrame)
 	rows.Add(components.NewSpacer(core.Size{H: 1}))
-	rows.Add(buttons)
+	rows.Add(strip)
 	rows.SetAlignment(core.AlignCenter)
 
 	win.SetAlignment(core.AlignCenter)
