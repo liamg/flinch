@@ -118,8 +118,8 @@ func (l *listSelect) HandleKeypress(key *tcell.EventKey) {
 		case '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			index, _ := strconv.Atoi(string([]rune{key.Rune()}))
 			index = index - 1
-			if index < len(m.options) {
-				m.selectionIndex = index
+			if index < len(l.options) {
+				l.selectionIndex = index
 			}
 		}
 	case tcell.KeyUp:
