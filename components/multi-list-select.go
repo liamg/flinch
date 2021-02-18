@@ -1,6 +1,8 @@
 package components
 
 import (
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liamg/flinch/core"
 )
@@ -129,6 +131,12 @@ func (m *listMultiSelect) HandleKeypress(key *tcell.EventKey) {
 		m.options[m.selectionIndex].checked = !m.options[m.selectionIndex].checked
 	case tcell.KeyRune:
 		switch key.Rune() {
+		case '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			index, _ := strconv.Atoi(string([]rune{key.Rune()}))
+			index = index - 1
+			if index < len(m.options) {
+				m.selectionIndex = index
+			}
 		case ' ':
 			m.options[m.selectionIndex].checked = !m.options[m.selectionIndex].checked
 		}
