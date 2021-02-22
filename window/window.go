@@ -2,6 +2,7 @@ package window
 
 import (
 	"sync"
+	"time"
 
 	"github.com/liamg/flinch/components"
 
@@ -97,21 +98,34 @@ func (w *window) selectNext() {
 }
 
 func (w *window) render() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.screen.Clear()
+	w.screen.SetStyle(core.StyleDefault.Tcell())
 	canvas := NewBaseCanvas(w.screen)
 	canvas.Fill(' ', core.StyleDefault)
-	w.screen.SetStyle(core.StyleDefault.Tcell())
-	w.screen.Clear()
 	w.container.Render(canvas)
 	w.screen.Show()
 }
 
-func (w *window) Show() error {
+func(w *window) sync(){
 	w.mu.Lock()
 	defer w.mu.Unlock()
+	w.screen.Sync()
+}
+
+func (w *window) Show() error {
+
 
 	if sel, ok := w.container.(core.Selectable); ok {
 		sel.Select()
 	}
+
+	go func(){
+		// avoid stdout race from caller
+		time.Sleep(time.Millisecond * 250)
+		w.sync()
+	}()
 
 	for {
 
@@ -119,7 +133,7 @@ func (w *window) Show() error {
 
 		switch ev := w.screen.PollEvent().(type) {
 		case *tcell.EventResize:
-			w.render()
+			continue
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyTab:
@@ -143,10 +157,12 @@ func (w *window) Show() error {
 		}
 
 		if w.shouldClose {
-			return nil
+			break
 		}
 
 	}
+
+	return nil
 }
 
 func (w *window) Close() {
