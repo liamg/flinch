@@ -59,6 +59,14 @@ _, items, err := widgets.MultiSelect(
 userConfirmed, _ := widgets.Confirm("Are you sure?")
 ```
 
+## Try It Out
+
+You can play with the examples by running them directly, e.g.
+
+```bash
+go run ./_examples/multiselect-long/
+```
+
 ## Build Your Own Widgets
 
-Check out the [widgets](widgets) package for some inspiration.
+Check out the [widgets](widgets) package for inspiration.
