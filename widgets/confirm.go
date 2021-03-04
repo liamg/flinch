@@ -7,6 +7,7 @@ import (
 	"github.com/liamg/flinch/window"
 )
 
+// Confirm displays a yes/no dialog with the given message. If "Yes" is selected, true is returned.
 func Confirm(msg string) (bool, error) {
 
 	win, err := window.New()
@@ -60,13 +61,22 @@ func Confirm(msg string) (bool, error) {
 	})
 
 	win.OnKeypress(func(key *tcell.EventKey) bool {
-		switch key.Rune() {
-		case 'y', 'Y':
-			confirmed = true
-			win.Close()
-		case 'n', 'N':
-			confirmed = false
-			win.Close()
+		switch key.Key() {
+		case tcell.KeyLeft:
+			no.Deselect()
+			yes.Select()
+		case tcell.KeyRight:
+			yes.Deselect()
+			no.Select()
+		case tcell.KeyRune:
+			switch key.Rune() {
+			case 'y', 'Y':
+				confirmed = true
+				win.Close()
+			case 'n', 'N':
+				confirmed = false
+				win.Close()
+			}
 		}
 		return false
 	})

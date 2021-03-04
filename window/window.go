@@ -108,7 +108,7 @@ func (w *window) render() {
 	w.screen.Show()
 }
 
-func(w *window) sync(){
+func (w *window) sync() {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.screen.Sync()
@@ -116,12 +116,11 @@ func(w *window) sync(){
 
 func (w *window) Show() error {
 
-
 	if sel, ok := w.container.(core.Selectable); ok {
 		sel.Select()
 	}
 
-	go func(){
+	go func() {
 		// avoid stdout race from caller
 		time.Sleep(time.Millisecond * 250)
 		w.sync()
