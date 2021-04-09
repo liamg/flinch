@@ -10,10 +10,10 @@ import (
 func getTermSize(t *testing.T) (int, int) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if err := screen.Init(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	defer screen.Fini()
 	return screen.Size()
