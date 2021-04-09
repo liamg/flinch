@@ -34,7 +34,7 @@ func (n *passwordInput) Render(canvas core.Canvas) {
 
 	canvas.Fill(' ', n.style)
 
-	canvas.Set(n.cursor, 0, ' ', n.style.Invert())
+	canvas.Set(n.cursor, 0, ' ', n.style.ToggleInvert())
 
 	size := canvas.Size()
 
@@ -49,7 +49,7 @@ func (n *passwordInput) Render(canvas core.Canvas) {
 	for offset := range []rune(visibleContent) {
 		st := n.style
 		if offset == clampedCursor {
-			st = st.Invert()
+			st = st.ToggleInvert()
 		}
 		canvas.Set(offset, 0, '*', st)
 	}

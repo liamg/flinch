@@ -10,7 +10,7 @@ func drawScrollbar(canvas core.Canvas, index int, size int, max int) {
 
 	for y := 0; y < canvasSize.H; y++ {
 		if y >= barPos && y < barPos+height {
-			canvas.Set(0, y, ' ', core.StyleDefault.Invert())
+			canvas.Set(0, y, ' ', core.StyleDefault.ToggleInvert())
 		} else {
 			canvas.Set(0, y, '│', core.StyleDefault)
 		}
