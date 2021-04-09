@@ -15,6 +15,7 @@ type Window interface {
 	Size() (int, int)
 	Add(c core.Component)
 	Remove(c core.Component)
+	SetSimulation(s bool)
 	SetAlignment(j core.Alignment) Window
 	Show() error
 	OnKeypress(handler func(key *tcell.EventKey) bool)
@@ -22,21 +23,42 @@ type Window interface {
 }
 
 type window struct {
-	container   core.Container
-	mu          sync.Mutex
-	screen      tcell.Screen
-	keyHandlers []func(key *tcell.EventKey) bool
-	shouldClose bool
+	container    core.Container
+	mu           sync.Mutex
+	screen       tcell.Screen
+	keyHandlers  []func(key *tcell.EventKey) bool
+	shouldClose  bool
+	isSimulation bool
 }
 
-func New() (Window, error) {
+type WindowOption func(w Window) error
+
+func WindowOptionSimulation() WindowOption {
+	return func(w Window) error {
+		w.SetSimulation(true)
+		return nil
+	}
+}
+
+func New(opts ...WindowOption) (Window, error) {
 	w := &window{
 		container: components.NewColumnLayout(),
 	}
+
+	for _, opt := range opts {
+		if err := opt(w); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := w.init(); err != nil {
 		return nil, err
 	}
 	return w, nil
+}
+
+func (w *window) SetSimulation(s bool) {
+	w.isSimulation = s
 }
 
 func (w *window) SetContainer(c core.Container) {
@@ -73,13 +95,21 @@ func (w *window) init() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
-	screen, err := tcell.NewScreen()
-	if err != nil {
+	var screen tcell.Screen
+	var err error
+	if w.isSimulation {
+		screen = tcell.NewSimulationScreen("")
+	} else {
+		screen, err = tcell.NewScreen()
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = screen.Init(); err != nil {
 		return err
 	}
-	if err := screen.Init(); err != nil {
-		return err
-	}
+
 	w.screen = screen
 	return nil
 }

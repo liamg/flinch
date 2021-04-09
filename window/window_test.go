@@ -8,10 +8,7 @@ import (
 )
 
 func getTermSize(t *testing.T) (int, int) {
-	screen, err := tcell.NewScreen()
-	if err != nil {
-		t.Fatal(err)
-	}
+	screen := tcell.NewSimulationScreen("")
 	if err := screen.Init(); err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +20,7 @@ func TestWindowSize(t *testing.T) {
 
 	w, h := getTermSize(t)
 
-	win, err := New()
+	win, err := New(WindowOptionSimulation())
 	if err != nil {
 		t.Error(err)
 	}
