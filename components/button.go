@@ -33,8 +33,8 @@ func (t *button) Render(canvas core.Canvas) {
 	size := canvas.Size()
 
 	if t.selected {
-		canvas.Set(0, 0, '', st.Invert())
-		canvas.Set(size.W-1, 0, '', st.Invert())
+		canvas.Set(0, 0, '', st.ToggleInvert())
+		canvas.Set(size.W-1, 0, '', st.ToggleInvert())
 	}
 
 	for i := 0; i < len(t.label); i++ {

@@ -5,82 +5,97 @@ import (
 )
 
 type Style struct {
-	inheritFg bool
-	inheritBg bool
-	invert    bool
-	underline bool
-	bold      bool
-	bg        Colour
-	fg        Colour
+	InheritFg bool   `mapstructure:"inherit_fg"`
+	InheritBg bool   `mapstructure:"inherit_bg"`
+	Invert    bool   `mapstructure:"invert"`
+	Underline bool   `mapstructure:"underline"`
+	Bold      bool   `mapstructure:"bold"`
+	Bg        Colour `mapstructure:"bg"`
+	Fg        Colour `mapstructure:"fg"`
 }
 
-var StyleDefault = Style{
-	bg:        Colour([3]int32{0x0d, 0x19, 0x25}),
-	fg:        Colour([3]int32{0xd9, 0xe5, 0xf1}),
-	inheritBg: true,
-}
+var (
+	StyleDefault        Style
+	StyleSelected       Style
+	StyleFaint          Style
+	StyleButton         Style
+	StyleButtonSelected Style
+	StyleInput          Style
+)
 
 var StyleInherit = Style{
-	inheritBg: true,
-	inheritFg: true,
+	InheritBg: true,
+	InheritFg: true,
 }
 
-var StyleSelected = StyleDefault.Invert()
+func SetStyle(style Style) {
+	StyleDefault = style
+	StyleInput = StyleDefault
+	StyleSelected = StyleDefault.ToggleInvert()
+	StyleFaint = StyleDefault.
+		SetInheritForeground(false).
+		SetForeground(FaintColour(StyleDefault.Fg))
+	StyleButton = StyleFaint
+	StyleButtonSelected = style.ToggleInvert().SetBold(true)
+}
 
-var StyleFaint = StyleDefault.SetForeground([3]int32{0x80, 0x80, 0x80})
-
-var StyleButton = StyleFaint
-var StyleButtonSelected = StyleDefault.Invert().Bold(true)
-
-var StyleInput = StyleDefault
-
-func (s Style) Invert() Style {
-	s.invert = !s.invert
+func (s Style) ToggleInvert() Style {
+	s.Invert = !s.Invert
 	return s
 }
 
-func (s Style) Underline(on bool) Style {
-	s.underline = on
+func (s Style) SetUnderline(on bool) Style {
+	s.Underline = on
 	return s
 }
 
-func (s Style) Bold(on bool) Style {
-	s.bold = on
+func (s Style) SetBold(on bool) Style {
+	s.Bold = on
 	return s
 }
 
 func (s Style) RemoveBackground() Style {
-	s.inheritBg = true
+	s.InheritBg = true
 	return s
 }
 
 func (s Style) GetForeground() Colour {
-	return s.fg
+	return s.Fg
 }
 
 func (s Style) GetBackground() Colour {
-	return s.bg
+	return s.Bg
 }
 
 func (s Style) SetForeground(colour Colour) Style {
-	s.fg = colour
+	s.Fg = colour
 	return s
 }
 
 func (s Style) SetBackground(colour Colour) Style {
-	s.bg = colour
+	s.Bg = colour
+	return s
+}
+
+func (s Style) SetInheritForeground(inheritFg bool) Style {
+	s.InheritFg = inheritFg
+	return s
+}
+
+func (s Style) SetInheritBackground(inheritBg bool) Style {
+	s.InheritBg = inheritBg
 	return s
 }
 
 func (s Style) Tcell() tcell.Style {
 	st := tcell.StyleDefault
-	if !s.inheritBg {
+	if !s.InheritBg {
 		bg := s.GetBackground()
 		st = st.Background(tcell.NewRGBColor(bg.Red(), bg.Green(), bg.Blue()))
 	}
-	if !s.inheritFg {
+	if !s.InheritFg {
 		fg := s.GetForeground()
 		st = st.Foreground(tcell.NewRGBColor(fg.Red(), fg.Green(), fg.Blue()))
 	}
-	return st.Reverse(s.invert).Underline(s.underline).Bold(s.bold)
+	return st.Reverse(s.Invert).Underline(s.Underline).Bold(s.Bold)
 }
