@@ -5,14 +5,26 @@ import (
 )
 
 type Style struct {
-	InheritFg bool   `mapstructure:"inherit_fg"`
-	InheritBg bool   `mapstructure:"inherit_bg"`
-	Invert    bool   `mapstructure:"invert"`
-	Underline bool   `mapstructure:"underline"`
-	Bold      bool   `mapstructure:"bold"`
-	Bg        Colour `mapstructure:"bg"`
-	Fg        Colour `mapstructure:"fg"`
+	InheritFg   bool             `mapstructure:"inherit_fg"`
+	InheritBg   bool             `mapstructure:"inherit_bg"`
+	Invert      bool             `mapstructure:"invert"`
+	Underline   bool             `mapstructure:"underline"`
+	Bold        bool             `mapstructure:"bold"`
+	Bg          Colour           `mapstructure:"bg"`
+	Fg          Colour           `mapstructure:"fg"`
+	ButtonEdges ButtonEdgesStyle `mapstructure:"button_edges"`
 }
+
+type ButtonEdgesStyle string
+
+const (
+	ButtonEdgesStyleAngled  ButtonEdgesStyle = "angled"
+	ButtonEdgesStyleFlat    ButtonEdgesStyle = "flat"
+	ButtonEdgesStyleRound   ButtonEdgesStyle = "round"
+	ButtonEdgesStyleSlanted ButtonEdgesStyle = "slanted"
+	ButtonEdgesStyleNone    ButtonEdgesStyle = "none"
+	ButtonEdgesStyleDefault ButtonEdgesStyle = ButtonEdgesStyleAngled
+)
 
 var (
 	StyleDefault        Style
@@ -23,9 +35,20 @@ var (
 	StyleInput          Style
 )
 
+var (
+	buttonEdges = map[ButtonEdgesStyle][2]rune{
+		ButtonEdgesStyleAngled:  {'', ''},
+		ButtonEdgesStyleFlat:    {'█', '█'},
+		ButtonEdgesStyleRound:   {'', ''},
+		ButtonEdgesStyleSlanted: {'', ''},
+		ButtonEdgesStyleNone:    {' ', ' '},
+	}
+)
+
 var StyleInherit = Style{
-	InheritBg: true,
-	InheritFg: true,
+	InheritBg:   true,
+	InheritFg:   true,
+	ButtonEdges: ButtonEdgesStyleDefault,
 }
 
 func SetStyle(style Style) {
@@ -36,7 +59,7 @@ func SetStyle(style Style) {
 		SetInheritForeground(false).
 		SetForeground(FaintColour(StyleDefault.Fg))
 	StyleButton = StyleFaint
-	StyleButtonSelected = style.ToggleInvert().SetBold(true)
+	StyleButtonSelected = StyleDefault.ToggleInvert().SetBold(true)
 }
 
 func (s Style) ToggleInvert() Style {
@@ -85,6 +108,20 @@ func (s Style) SetInheritForeground(inheritFg bool) Style {
 func (s Style) SetInheritBackground(inheritBg bool) Style {
 	s.InheritBg = inheritBg
 	return s
+}
+
+func (s Style) SetButtonEdges(b ButtonEdgesStyle) Style {
+	s.ButtonEdges = b
+	return s
+}
+
+func (s Style) GetButtonEdges() [2]rune {
+	edges, ok := buttonEdges[s.ButtonEdges]
+	if !ok {
+		edges = buttonEdges[ButtonEdgesStyleDefault]
+	}
+
+	return edges
 }
 
 func (s Style) Tcell() tcell.Style {

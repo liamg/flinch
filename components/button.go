@@ -18,32 +18,33 @@ func NewButton(label string) *button {
 	}
 }
 
-func (t *button) Text() string {
-	return t.label
+func (l *button) Text() string {
+	return l.label
 }
 
-func (t *button) Render(canvas core.Canvas) {
+func (l *button) Render(canvas core.Canvas) {
 
 	st := core.StyleButton
-	if t.selected {
+	if l.selected {
 		st = core.StyleButtonSelected
 	}
 
 	canvas.Fill(' ', st)
 	size := canvas.Size()
 
-	if t.selected {
-		canvas.Set(0, 0, '', st.ToggleInvert())
-		canvas.Set(size.W-1, 0, '', st.ToggleInvert())
+	if l.selected {
+		edges := st.GetButtonEdges()
+		canvas.Set(0, 0, edges[0], st.ToggleInvert())
+		canvas.Set(size.W-1, 0, edges[1], st.ToggleInvert())
 	}
 
-	for i := 0; i < len(t.label); i++ {
-		canvas.Set(((size.W-len(t.label))/2)+i, 0, rune(t.label[i]), st)
+	for i := 0; i < len(l.label); i++ {
+		canvas.Set(((size.W-len(l.label))/2)+i, 0, rune(l.label[i]), st)
 	}
 }
 
-func (t *button) MinimumSize() core.Size {
-	return core.Size{W: len(t.label) + 4, H: 1}
+func (l *button) MinimumSize() core.Size {
+	return core.Size{W: len(l.label) + 4, H: 1}
 }
 
 func (l *button) Deselect() {
