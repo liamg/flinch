@@ -15,8 +15,9 @@ type Style struct {
 }
 
 var StyleDefault = Style{
-	bg: Colour([3]int32{0x0d, 0x19, 0x25}),
-	fg: Colour([3]int32{0xd9, 0xe5, 0xf1}),
+	bg:        Colour([3]int32{0x0d, 0x19, 0x25}),
+	fg:        Colour([3]int32{0xd9, 0xe5, 0xf1}),
+	inheritBg: true,
 }
 
 var StyleInherit = Style{
