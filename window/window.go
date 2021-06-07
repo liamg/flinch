@@ -186,6 +186,7 @@ func (w *window) Show() error {
 		}
 
 		if w.shouldClose {
+			w.screen.Fini()
 			break
 		}
 
@@ -195,6 +196,5 @@ func (w *window) Show() error {
 }
 
 func (w *window) Close() {
-	w.screen.Fini()
 	w.shouldClose = true
 }
