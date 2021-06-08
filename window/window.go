@@ -29,6 +29,7 @@ type window struct {
 	keyHandlers  []func(key *tcell.EventKey) bool
 	shouldClose  bool
 	isSimulation bool
+	visible      bool
 }
 
 type WindowOption func(w Window) error
@@ -146,6 +147,10 @@ func (w *window) sync() {
 
 func (w *window) Show() error {
 
+	w.mu.Lock()
+	w.visible = true
+	w.mu.Unlock()
+
 	if sel, ok := w.container.(core.Selectable); ok {
 		sel.Select()
 	}
@@ -186,7 +191,12 @@ func (w *window) Show() error {
 		}
 
 		if w.shouldClose {
-			w.screen.Fini()
+			w.mu.Lock()
+			if w.visible {
+				w.screen.Fini()
+				w.visible = false
+			}
+			w.mu.Unlock()
 			break
 		}
 
@@ -196,5 +206,10 @@ func (w *window) Show() error {
 }
 
 func (w *window) Close() {
+	w.mu.Lock()
+	if !w.visible {
+		w.screen.Fini()
+	}
+	w.mu.Unlock()
 	w.shouldClose = true
 }
