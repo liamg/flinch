@@ -1,6 +1,7 @@
 package window
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -29,7 +30,7 @@ type window struct {
 	keyHandlers  []func(key *tcell.EventKey) bool
 	shouldClose  bool
 	isSimulation bool
-	visible      bool
+	exitOnce     sync.Once
 }
 
 type WindowOption func(w Window) error
@@ -145,11 +146,13 @@ func (w *window) sync() {
 	w.screen.Sync()
 }
 
-func (w *window) Show() error {
+func (w *window) Show() (err error) {
 
-	w.mu.Lock()
-	w.visible = true
-	w.mu.Unlock()
+	defer func() {
+		if e := recover(); e != nil {
+			err = fmt.Errorf("recovered from panic: %v", e)
+		}
+	}()
 
 	if sel, ok := w.container.(core.Selectable); ok {
 		sel.Select()
@@ -191,12 +194,7 @@ func (w *window) Show() error {
 		}
 
 		if w.shouldClose {
-			w.mu.Lock()
-			if w.visible {
-				w.screen.Fini()
-				w.visible = false
-			}
-			w.mu.Unlock()
+			w.safeClose()
 			break
 		}
 
@@ -206,10 +204,12 @@ func (w *window) Show() error {
 }
 
 func (w *window) Close() {
-	w.mu.Lock()
-	if !w.visible {
-		w.screen.Fini()
-	}
-	w.mu.Unlock()
+	w.safeClose()
+}
+
+func (w *window) safeClose() {
 	w.shouldClose = true
+	w.exitOnce.Do(func() {
+		w.screen.Fini()
+	})
 }
