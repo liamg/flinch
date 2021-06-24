@@ -59,6 +59,10 @@ func (l *button) Select() bool {
 	return true
 }
 
+func (l *button) Selected() bool {
+	return l.selected
+}
+
 func (l *button) OnPress(f func()) {
 	l.pressFunc = f
 }
