@@ -63,11 +63,10 @@ func Confirm(msg string) (bool, error) {
 	win.OnKeypress(func(key *tcell.EventKey) bool {
 		switch key.Key() {
 		case tcell.KeyLeft:
-			no.Deselect()
-			yes.Select()
+			strip.Deselect()
+			strip.Select()
 		case tcell.KeyRight:
-			yes.Deselect()
-			no.Select()
+			strip.Select()
 		case tcell.KeyRune:
 			switch key.Rune() {
 			case 'y', 'Y':
