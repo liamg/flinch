@@ -49,10 +49,7 @@ func Confirm(msg string) (bool, error) {
 	win.SetAlignment(core.AlignCenter)
 	win.Add(rows)
 
-	var confirmed bool
-
 	yes.OnPress(func() {
-		confirmed = true
 		win.Close()
 	})
 
@@ -71,10 +68,12 @@ func Confirm(msg string) (bool, error) {
 		case tcell.KeyRune:
 			switch key.Rune() {
 			case 'y', 'Y':
-				confirmed = true
+				no.Deselect()
+				yes.Select()
 				win.Close()
 			case 'n', 'N':
-				confirmed = false
+				yes.Deselect()
+				no.Select()
 				win.Close()
 			}
 		}
@@ -85,5 +84,5 @@ func Confirm(msg string) (bool, error) {
 		return false, err
 	}
 
-	return confirmed, nil
+	return yes.Selected(), nil
 }
